@@ -3,10 +3,11 @@ import json
 import uuid
 import hashlib
 import mimetypes
+import urllib.parse
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from datetime import datetime, timedelta
 
-PORT = 8080
+PORT = 3000
 DB_FILE = os.path.join(os.path.dirname(__file__), 'database.json')
 UPLOADS_DIR = os.path.join(os.path.dirname(__file__), 'uploads')
 
@@ -411,9 +412,6 @@ class PrajaMitraHandler(BaseHTTPRequestHandler):
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
         self.wfile.write(json.dumps(obj).encode('utf-8'))
-
-# Inline imports inside code
-import urllib.parse
 
 def run_server():
     server = HTTPServer(('0.0.0.0', PORT), PrajaMitraHandler)
