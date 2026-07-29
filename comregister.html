@@ -153,6 +153,11 @@
                     <button type="button" class="map-tab-btn active" id="tab-live-btn" onclick="selectMapTab('live')">Option 1: Live Geolocation GPS</button>
                     <button type="button" class="map-tab-btn" id="tab-manual-btn" onclick="selectMapTab('manual')">Option 2: Search &amp; Manual Pin</button>
                   </div>
+                  <!-- Map Address Search Row -->
+                  <div class="map-search-row" id="map-search-row-box" style="display:none; padding:10px 14px 0;">
+                    <input type="text" id="map-search-input" class="form-control map-search-input" placeholder="Search address or area name..." onkeydown="if(event.key === 'Enter') searchMapAddress()" />
+                    <button type="button" class="action-addon-btn" onclick="searchMapAddress()">Search</button>
+                  </div>
                   <div class="map-body-wrapper" id="leaflet-map-container"></div>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
@@ -418,9 +423,49 @@
         document.getElementById('tab-live-btn').className = tab === 'live' ? 'map-tab-btn active' : 'map-tab-btn';
         document.getElementById('tab-manual-btn').className = tab === 'manual' ? 'map-tab-btn active' : 'map-tab-btn';
         
-        if (tab === 'live') {
+        const searchBox = document.getElementById('map-search-row-box');
+        if (tab === 'manual') {
+          if (searchBox) searchBox.style.display = 'flex';
+        } else {
+          if (searchBox) searchBox.style.display = 'none';
           fetchLiveGPS();
         }
+      }
+
+      function searchMapAddress() {
+        const query = document.getElementById('map-search-input').value.trim();
+        if (!query) {
+          alert('Please enter an address or landmark to search!');
+          return;
+        }
+
+        const statusText = document.getElementById('gps-status');
+        statusText.innerText = 'Searching address...';
+        statusText.style.color = '#ef4444';
+
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.length > 0) {
+              const lat = parseFloat(data[0].lat);
+              const lng = parseFloat(data[0].lon);
+              const displayName = data[0].display_name;
+
+              map.setView([lat, lng], 15);
+              marker.setLatLng([lat, lng]);
+              updatePinnedCoordinates(lat, lng);
+              statusText.innerText = `✓ Found: ${displayName.substring(0, 60)}...`;
+              statusText.style.color = '#1f7a3f';
+            } else {
+              alert('No location found for this search query. Please try another place name.');
+              statusText.innerText = 'Address search failed.';
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            alert('Error connecting to map search service. Try clicking manually on the map.');
+            statusText.innerText = 'Map search error.';
+          });
       }
 
       function fetchLiveGPS() {

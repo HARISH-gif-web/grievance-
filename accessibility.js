@@ -170,10 +170,23 @@ function injectAccessibilityLayouts() {
   // Hook login and menu buttons in header
   const header = document.querySelector('header.header');
   if (header) {
-    // Replace login button and menu button with dynamic targets
+    // Replace login, voice, and menu buttons with dynamic targets
     const oldLogin = header.querySelector('.login-btn');
     const oldMenu = header.querySelector('.menu-btn');
+    const oldVoice = header.querySelector('.voice-btn');
     
+    if (oldVoice) {
+      oldVoice.outerHTML = `
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button class="voice-btn" onclick="startHeaderVoiceSearch()">
+            <span class="mic">🎤</span> <span data-translate="voice_search">Voice Search</span>
+          </button>
+          <button class="emergency-header-btn" onclick="triggerVoiceEmergency()">
+            🚨 <span data-translate="voice_emergency">Voice Emergency</span>
+          </button>
+        </div>
+      `;
+    }
     if (oldLogin) oldLogin.outerHTML = `<div id="auth-header-wrapper" style="margin-left:auto;"><button class="login-btn" onclick="openAuthModal()">👤 Login / Register</button></div>`;
     if (oldMenu) oldMenu.outerHTML = `<button class="menu-btn" onclick="toggleDrawer()" style="margin-left: 12px;">☰</button>`;
   }
@@ -435,3 +448,218 @@ window.addEventListener('click', (e) => {
     if (menu) menu.classList.remove('active');
   }
 });
+
+// ==========================================================================
+// DYNAMIC VOICE ASSISTANCE & EMERGENCY SERVICES
+// ==========================================================================
+let emergencyAudioRecorder = null;
+let emergencyAudioChunks = [];
+let emergencyGPSCoords = { lat: null, lng: null };
+
+function triggerVoiceEmergency() {
+  let modal = document.getElementById('emergency-modal-overlay');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'emergency-modal-overlay';
+    modal.className = 'modal-overlay';
+    document.body.appendChild(modal);
+  }
+  
+  modal.innerHTML = `
+    <div class="modal-card" style="max-width: 420px; padding: 30px;">
+      <h3 style="color:#ef4444; margin:0 0 10px;">🚨 Emergency Voice Lodge</h3>
+      <p style="font-size:13px; color:#64748b;">Recording will start automatically to capture details of the emergency incident.</p>
+      
+      <div class="emergency-recording-indicator" id="emerg-recording-box">
+        <div class="recording-pulse-circle"></div>
+        <h4 id="emerg-timer-label" style="margin:0;">Recording: 4s remaining</h4>
+        <span style="font-size:11px; color:#94a3b8;">Speak clearly into your microphone...</span>
+      </div>
+
+      <div style="font-size:12px; color:#1f7a3f; display:none; margin: 15px 0;" id="emerg-gps-status">
+        ✓ GPS coordinates successfully acquired.
+      </div>
+      
+      <div id="emerg-loading-spinner" style="display:none; font-size:13px; font-weight:700; color:#1f7a3f; margin: 15px 0;">
+        ⏳ Transmitting emergency report directly to portal...
+      </div>
+    </div>
+  `;
+  
+  modal.classList.add('active');
+
+  // Request Permissions & Record
+  Promise.all([
+    navigator.mediaDevices.getUserMedia({ audio: true }),
+    new Promise((resolve) => {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          emergencyGPSCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          resolve(true);
+        },
+        (err) => {
+          emergencyGPSCoords = { lat: 16.3067, lng: 80.4365 }; // Fallback
+          resolve(false);
+        },
+        { timeout: 3000 }
+      );
+    })
+  ])
+  .then(([stream, gpsSuccess]) => {
+    if (gpsSuccess) {
+      const gpsLabel = document.getElementById('emerg-gps-status');
+      if (gpsLabel) gpsLabel.style.display = 'block';
+    }
+    startEmergencyAudioRecording(stream);
+  })
+  .catch(err => {
+    alert('Microphone permission is required for emergency voice lodging!');
+    modal.classList.remove('active');
+  });
+}
+
+function startEmergencyAudioRecording(stream) {
+  emergencyAudioRecorder = new MediaRecorder(stream);
+  emergencyAudioChunks = [];
+
+  emergencyAudioRecorder.ondataavailable = (e) => {
+    emergencyAudioChunks.push(e.data);
+  };
+
+  emergencyAudioRecorder.onstop = () => {
+    const audioBlob = new Blob(emergencyAudioChunks, { type: 'audio/wav' });
+    stream.getTracks().forEach(t => t.stop());
+    submitEmergencyGrievance(audioBlob);
+  };
+
+  emergencyAudioRecorder.start();
+  
+  let timeLeft = 4;
+  const timerLabel = document.getElementById('emerg-timer-label');
+  const timerInterval = setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      if (emergencyAudioRecorder.state !== 'inactive') {
+        emergencyAudioRecorder.stop();
+      }
+    } else {
+      if (timerLabel) timerLabel.innerText = `Recording: ${timeLeft}s remaining`;
+    }
+  }, 1000);
+}
+
+function submitEmergencyGrievance(audioBlob) {
+  const recordBox = document.getElementById('emerg-recording-box');
+  const spinner = document.getElementById('emerg-loading-spinner');
+  
+  if (recordBox) recordBox.style.display = 'none';
+  if (spinner) spinner.style.display = 'block';
+
+  const formData = new FormData();
+  formData.append('category', 'Emergency');
+  formData.append('subcategory', 'Voice Incident');
+  formData.append('title', 'Emergency Voice Report');
+  formData.append('description', 'Grievance lodged directly via one-click emergency voice record.');
+  formData.append('severity', 'High');
+  formData.append('anonymous', 'true');
+  formData.append('latitude', emergencyGPSCoords.lat || '16.3067');
+  formData.append('longitude', emergencyGPSCoords.lng || '80.4365');
+  formData.append('audio', audioBlob, 'emergency.wav');
+
+  fetch('/api/complaints', {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('API failure');
+    return res.json();
+  })
+  .then(data => {
+    const modal = document.getElementById('emergency-modal-overlay');
+    modal.querySelector('.modal-card').innerHTML = `
+      <div class="success-checkmark-wrap" style="width:64px; height:64px; font-size:32px; margin-bottom:16px;">✓</div>
+      <h3 style="color:#1f7a3f; margin-bottom:8px;">🚨 Emergency Lodged!</h3>
+      <p style="font-size:13px; color:#64748b; margin-bottom:16px;">Your emergency incident has been auto-submitted with GPS location and voice files.</p>
+      
+      <div class="ticket-info-box" style="padding:12px; margin-bottom:20px; font-size:13px; text-align:left;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+          <span>Ticket ID:</span>
+          <b style="font-family:monospace; color:#1f7a3f;">${data.id}</b>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <span>Department:</span>
+          <b>${data.dept}</b>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-secondary" onclick="document.getElementById('emergency-modal-overlay').classList.remove('active')" style="flex:1; justify-content:center;">Close</button>
+        <button class="btn btn-primary" onclick="location.href='track.html?id=${data.id}'" style="flex:1; justify-content:center;">Track Status</button>
+      </div>
+    `;
+  })
+  .catch(err => {
+    console.error(err);
+    alert('Failed to submit emergency report to portal server. Check connection.');
+    document.getElementById('emergency-modal-overlay').classList.remove('active');
+  });
+}
+
+function startHeaderVoiceSearch() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert("Speech recognition is not supported in this browser.");
+    return;
+  }
+  const recognition = new SpeechRecognition();
+  recognition.lang = localStorage.getItem('prajamitra_lang') || 'en';
+  
+  const voiceBtn = document.querySelector('.voice-btn');
+  const oldText = voiceBtn.innerHTML;
+  voiceBtn.innerHTML = '🎙️ Listening...';
+  
+  recognition.onresult = function(event) {
+    const text = event.results[0][0].transcript;
+    voiceBtn.innerHTML = oldText;
+    
+    const q = text.toLowerCase();
+    
+    if (typeof speakText === 'function') {
+      speakText('Voice command received: redirecting.');
+    }
+    
+    if (q.includes('road') || q.includes('pothole') || q.includes('street') || q.includes('garbage') || q.includes('streetlight') || q.includes('highway') || q.includes('drainage')) {
+      location.href = 'comregister.html#civic';
+    } else if (q.includes('ration') || q.includes('food') || q.includes('canteen') || q.includes('water') || q.includes('meal') || q.includes('welfare')) {
+      location.href = 'comregister.html#food';
+    } else if (q.includes('school') || q.includes('education') || q.includes('college') || q.includes('scholarship') || q.includes('teacher') || q.includes('fee')) {
+      location.href = 'comregister.html#education';
+    } else if (q.includes('hospital') || q.includes('doctor') || q.includes('medicine') || q.includes('health') || q.includes('ambulance') || q.includes('clinic')) {
+      location.href = 'comregister.html#health';
+    } else if (q.includes('home')) {
+      location.href = 'main.html';
+    } else if (q.includes('track') || q.includes('status')) {
+      const ticketMatch = q.match(/pm-\d{4}-x\d{5}/i) || q.match(/\d{5}/);
+      if (ticketMatch) {
+        let ticketNum = ticketMatch[0].toUpperCase();
+        if (!ticketNum.startsWith('PM')) {
+          ticketNum = 'PM-2026-X' + ticketNum;
+        }
+        location.href = `track.html?id=${ticketNum}`;
+      } else {
+        location.href = 'track.html';
+      }
+    } else if (q.includes('register') || q.includes('lodge')) {
+      location.href = 'complaint.html';
+    } else {
+      alert(`Voice Command: "${text}" not mapped. Say Roads, Food, Health, Education, Home, or Track.`);
+    }
+  };
+  
+  recognition.onerror = function() {
+    voiceBtn.innerHTML = oldText;
+  };
+  recognition.start();
+}
+
