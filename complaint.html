@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PrajaMitra — Select Category</title>
+    <link rel="stylesheet" href="main.css" />
+  </head>
+  <body>
+    <!-- TOP GOVERNMENT STRIP -->
+    <div class="gov-strip" id="main">
+      <div class="gov-left">
+        <span class="flag"
+          ><span class="s"></span><span class="w"></span><span class="g"></span
+        ></span>
+        <b data-translate="gov_title">Government of India</b>
+        <span class="divider">|</span>
+        <span>One Nation</span>
+        <span class="divider">|</span>
+        <span>One Platform</span>
+      </div>
+      <div class="gov-right">
+        <!-- Injected dynamically by accessibility.js -->
+      </div>
+    </div>
+
+    <!-- MAIN HEADER -->
+    <header class="header">
+      <a href="main.html" class="logolink">
+        <div class="brand">
+          <div class="brand-logo" style="background:none; width:auto; height:auto; border-radius:0;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="State Emblem of India" style="height:46px; width:auto;" />
+          </div>
+          <div>
+            <div class="brand-name">PrajaMitra</div>
+            <div class="brand-tag" data-translate="brand_tag">
+              Report • Track • Solve
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <div class="search">
+        <input
+          type="text"
+          placeholder="Search complaints, departments, schemes..."
+        />
+        <button>Search</button>
+      </div>
+
+      <button class="voice-btn">
+        <span class="mic">🎤</span> Voice Search
+        <span class="badge-new">New</span>
+      </button>
+
+      <!-- Injected dynamically by accessibility.js -->
+      <div id="auth-header-wrapper" style="margin-left:auto;">
+        <button class="login-btn" onclick="openAuthModal()" data-translate="login_btn">👤 Login / Register</button>
+      </div>
+      <button class="menu-btn" onclick="toggleDrawer()">☰</button>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="wrap">
+      <!-- SECTION TITLE -->
+      <div class="section-header">
+        <h2 data-translate="report_title">What do you want to report?</h2>
+        <p data-translate="report_subtitle">Choose a category that best matches your issue</p>
+      </div>
+
+      <!-- CATEGORY CARDS GRID -->
+      <div class="category-grid">
+        <!-- Card 1: Food & Public Welfare -->
+        <div class="cat-card green">
+          <div class="cat-icon-wrap">
+            <div class="cat-icon">🥣</div>
+          </div>
+          <div class="cat-illustration">
+            <img
+              src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=500&auto=format&fit=crop"
+              alt="Food & Public Welfare"
+            />
+          </div>
+          <div class="cat-body">
+            <h3 data-translate="cat_food">Food &amp; Public Welfare</h3>
+            <p data-translate="cat_food_desc">
+              Food quality, ration shops, Anna Canteens, drinking water, welfare
+              schemes and more.
+            </p>
+            <a href="comregister.html#food" class="rig1"
+              ><button class="report-btn" data-translate="btn_report">Report Now &rarr;</button></a
+            >
+          </div>
+        </div>
+
+        <!-- Card 2: Civic Infrastructure -->
+        <div class="cat-card orange">
+          <div class="cat-icon-wrap">
+            <div class="cat-icon">🏢</div>
+          </div>
+          <div class="cat-illustration">
+            <img
+              src="https://images.unsplash.com/photo-1519999482648-25049ddd37b1?q=80&w=500&auto=format&fit=crop"
+              alt="Civic Infrastructure"
+            />
+          </div>
+          <div class="cat-body">
+            <h3 data-translate="cat_civic">Civic Infrastructure</h3>
+            <p data-translate="cat_civic_desc">
+              Roads, drainage, garbage, street lights, water supply, traffic,
+              housing and more.
+            </p>
+            <a href="comregister.html#civic" class="rig2"
+              ><button class="report-btn" data-translate="btn_report">Report Now &rarr;</button></a
+            >
+          </div>
+        </div>
+
+        <!-- Card 3: Education -->
+        <div class="cat-card blue">
+          <div class="cat-icon-wrap">
+            <div class="cat-icon">🎓</div>
+          </div>
+          <div class="cat-illustration">
+            <img
+              src="https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=500&auto=format&fit=crop"
+              alt="Education"
+            />
+          </div>
+          <div class="cat-body">
+            <h3 data-translate="cat_education">Education</h3>
+            <p data-translate="cat_education_desc">
+              Schools, colleges, hostels, scholarships, teachers, infrastructure
+              and more.
+            </p>
+            <a href="comregister.html#education" class="rig3"
+              ><button class="report-btn" data-translate="btn_report">Report Now &rarr;</button></a
+            >
+          </div>
+        </div>
+
+        <!-- Card 4: Health Services -->
+        <div class="cat-card red">
+          <div class="cat-icon-wrap">
+            <div class="cat-icon">❤️</div>
+          </div>
+          <div class="cat-illustration">
+            <img
+              src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=400&q=80"
+              alt="Health Services"
+            />
+          </div>
+          <div class="cat-body">
+            <h3 data-translate="cat_health">Health Services</h3>
+            <p data-translate="cat_health_desc">
+              Hospitals, medicines, doctors, ambulance, sanitation, vaccination
+              and more.
+            </p>
+            <a href="comregister.html#health" class="rig4"
+              ><button class="report-btn" data-translate="btn_report">Report Now &rarr;</button></a
+            >
+          </div>
+        </div>
+
+        <!-- Card 5: Other -->
+        <div class="cat-card purple">
+          <div class="cat-icon-wrap">
+            <div class="cat-icon">🔲</div>
+          </div>
+          <div class="cat-illustration">
+            <img
+              src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=400&q=80"
+              alt="Other Issues"
+            />
+          </div>
+          <div class="cat-body">
+            <h3 data-translate="cat_other">Other</h3>
+            <p data-translate="cat_other_desc">
+              Police, fire services, transport, banking, passport, telecom and
+              more.
+            </p>
+            <a href="comregister.html#other" class="rig5"
+              ><button class="report-btn" data-translate="btn_report">Report Now &rarr;</button></a
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM HELPER BANNER -->
+      <div class="help-banner">
+        <div class="help-left">
+          <div class="bulb-icon">💡</div>
+          <div>
+            <h4 data-translate="help_banner_title">Didn't find your issue?</h4>
+            <p data-translate="help_banner_desc">
+              We're here to help. If your issue doesn't fit in the above
+              categories, you can still submit it and we will route it to the
+              right department.
+            </p>
+          </div>
+        </div>
+        <a href="comregister.html#other" style="text-decoration: none;"
+          ><button class="submit-other-btn" data-translate="btn_submit_other">Submit Other Issue &rarr;</button></a
+        >
+      </div>
+    </main>
+
+    <!-- Scripts Injection -->
+    <script src="translate.js"></script>
+    <script src="accessibility.js"></script>
+  </body>
+</html>

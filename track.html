@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PrajaMitra — Tracking Dashboard</title>
+    <link rel="stylesheet" href="main.css" />
+  </head>
+  <body>
+    <!-- TOP GOVERNMENT STRIP -->
+    <div class="gov-strip" id="main">
+      <div class="gov-left">
+        <span class="flag"
+          ><span class="s"></span><span class="w"></span><span class="g"></span
+        ></span>
+        <b data-translate="gov_title">Government of India</b>
+        <span class="divider">|</span>
+        <span>One Nation</span>
+        <span class="divider">|</span>
+        <span>One Platform</span>
+      </div>
+      <div class="gov-right">
+        <!-- Injected dynamically by accessibility.js -->
+      </div>
+    </div>
+
+    <!-- MAIN HEADER -->
+    <header class="header">
+      <a href="main.html" class="logolink">
+        <div class="brand">
+          <div class="brand-logo" style="background:none; width:auto; height:auto; border-radius:0;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="State Emblem of India" style="height:46px; width:auto;" />
+          </div>
+          <div>
+            <div class="brand-name">PrajaMitra</div>
+            <div class="brand-tag" data-translate="brand_tag">
+              Report • Track • Solve
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <div class="search">
+        <input
+          type="text"
+          placeholder="Search complaints, departments, schemes..."
+        />
+        <button>Search</button>
+      </div>
+
+      <button class="voice-btn">
+        <span class="mic">🎤</span> Voice Search
+        <span class="badge-new">New</span>
+      </button>
+
+      <!-- Injected dynamically by accessibility.js -->
+      <div id="auth-header-wrapper" style="margin-left:auto;">
+        <button class="login-btn" onclick="openAuthModal()" data-translate="login_btn">👤 Login / Register</button>
+      </div>
+      <button class="menu-btn" onclick="toggleDrawer()">☰</button>
+    </header>
+
+    <!-- DASHBOARD CONTAINER -->
+    <main class="wrap">
+      <div class="dashboard-grid">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar-panel">
+          <ul class="sidebar-menu">
+            <li class="sidebar-item active" id="menu-track" onclick="switchTab('track')">
+              <span class="sidebar-item-icon">📍</span>
+              <span data-translate="card_track">Track Status</span>
+            </li>
+            <li class="sidebar-item" id="menu-my" onclick="switchTab('my')">
+              <span class="sidebar-item-icon">📋</span>
+              <span data-translate="card_my">My Complaints</span>
+            </li>
+          </ul>
+        </aside>
+
+        <!-- Main Workspace -->
+        <section class="main-dashboard-content">
+          
+          <!-- SECTION 1: TRACK COMPLAINT -->
+          <div class="dashboard-section active" id="sec-track">
+            <h2 data-translate="track_title">Grievance Status Tracker</h2>
+            <p class="sec-desc" data-translate="track_desc">Enter your unique 12-digit ticket number to view the detailed progress of your complaint.</p>
+            
+            <div class="tracker-search-wrap">
+              <div class="tracker-search-box">
+                <input type="text" id="track-input" placeholder="Enter Ticket ID (e.g., PM-2026-X839A)" onkeydown="if(event.key === 'Enter') trackComplaint()" />
+                <button type="button" onclick="trackComplaint()">Track Status</button>
+              </div>
+              <span class="search-hint">Can't find your ID? Check <span onclick="switchTab('my')" style="color: #1f7a3f; cursor: pointer; text-decoration: underline;">My Complaints</span> list.</span>
+            </div>
+
+            <!-- Empty tracker state -->
+            <div class="empty-state" id="track-empty">
+              <span class="empty-state-icon">🔍</span>
+              <h4>No Active Tracking Query</h4>
+              <p>Enter a Ticket ID above to search and display the dynamic status timeline.</p>
+            </div>
+
+            <!-- Tracker Results View -->
+            <div class="tracker-results" id="track-results">
+              <!-- Meta Card -->
+              <div class="tracker-meta-card">
+                <div class="meta-item">
+                  <span class="meta-label">Ticket ID</span>
+                  <span class="meta-value" id="meta-ticket-id">PM-2026-X839A</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Date Submitted</span>
+                  <span class="meta-value" id="meta-date">July 29, 2026</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Department</span>
+                  <span class="meta-value" id="meta-dept">Public Health Department</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Status</span>
+                  <span class="meta-value status-badge" id="meta-status">Submitted</span>
+                </div>
+              </div>
+
+              <!-- Media Attachment Previews if any -->
+              <div id="media-attachment-box" style="margin-bottom: 24px; display: none;">
+                <h4 style="margin-bottom:10px; font-size:14px; font-weight:700; color:#475569;">📎 Attached Evidence:</h4>
+                <div class="preview-container" id="timeline-media-previews" style="margin-top: 0;"></div>
+              </div>
+
+              <!-- Status Timeline -->
+              <div class="status-timeline" id="status-timeline">
+                <!-- Loaded dynamically -->
+              </div>
+            </div>
+
+          </div>
+
+          <!-- SECTION 2: MY COMPLAINTS -->
+          <div class="dashboard-section" id="sec-my">
+            <h2 data-translate="my_complaints_title">My Grievance Dashboard</h2>
+            <p class="sec-desc" data-translate="my_complaints_desc">List of all complaints submitted from this browser session.</p>
+
+            <div class="complaints-list" id="complaints-list">
+              <!-- Loaded dynamically -->
+            </div>
+          </div>
+
+        </section>
+      </div>
+    </main>
+
+    <!-- CODE SCRIPT LOGIC -->
+    <script src="translate.js"></script>
+    <script src="accessibility.js"></script>
+    <script>
+      let currentTab = 'track';
+
+      window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const ticketId = urlParams.get('id');
+        const view = urlParams.get('view');
+
+        if (view === 'my-complaints') {
+          switchTab('my');
+        } else if (ticketId) {
+          switchTab('track');
+          document.getElementById('track-input').value = ticketId;
+          trackComplaint(ticketId);
+        } else {
+          switchTab('track');
+        }
+      };
+
+      // Tab Switcher
+      function switchTab(tabName) {
+        currentTab = tabName;
+        
+        // Update menu active
+        document.getElementById('menu-track').className = tabName === 'track' ? 'sidebar-item active' : 'sidebar-item';
+        document.getElementById('menu-my').className = tabName === 'my' ? 'sidebar-item active' : 'sidebar-item';
+        
+        // Update section active
+        document.getElementById('sec-track').className = tabName === 'track' ? 'dashboard-section active' : 'dashboard-section';
+        document.getElementById('sec-my').className = tabName === 'my' ? 'dashboard-section active' : 'dashboard-section';
+        
+        if (tabName === 'my') {
+          loadMyComplaints();
+        }
+      }
+
+      // Track Complaint details from backend API
+      function trackComplaint(forcedId) {
+        const queryId = forcedId || document.getElementById('track-input').value.trim();
+        const emptyBox = document.getElementById('track-empty');
+        const resultsBox = document.getElementById('track-results');
+
+        if (!queryId) {
+          alert('Please enter a valid Ticket ID!');
+          return;
+        }
+
+        // Fetch from express backend
+        fetch(`/api/complaints/track/${queryId}`)
+          .then(res => {
+            if (!res.ok) throw new Error('Complaint not found');
+            return res.json();
+          })
+          .then(found => {
+            emptyBox.style.display = 'none';
+            resultsBox.classList.add('active');
+
+            // Populate Meta details
+            document.getElementById('meta-ticket-id').innerText = found.id;
+            document.getElementById('meta-date').innerText = found.date;
+            document.getElementById('meta-dept').innerText = found.dept;
+            
+            const statusBadge = document.getElementById('meta-status');
+            statusBadge.innerText = found.status;
+            
+            // Style status badge
+            statusBadge.className = 'meta-value status-badge';
+            if (found.status.includes('Review') || found.status.includes('Submitted')) {
+              statusBadge.classList.add('submitted');
+            } else if (found.status.includes('Assigned')) {
+              statusBadge.classList.add('assigned');
+            } else if (found.status.includes('Investigation')) {
+              statusBadge.classList.add('investigation');
+            } else {
+              statusBadge.classList.add('resolved');
+            }
+
+            // Evidence attachments check
+            const mediaBox = document.getElementById('media-attachment-box');
+            const mediaPreviews = document.getElementById('timeline-media-previews');
+            mediaPreviews.innerHTML = '';
+            
+            if (found.media && (found.media.photo || found.media.video || found.media.audio)) {
+              mediaBox.style.display = 'block';
+              if (found.media.photo) {
+                mediaPreviews.innerHTML += `
+                  <div class="file-preview">
+                    <img src="${found.media.photo}" alt="Attached Evidence Snapshot" style="cursor:pointer;" onclick="window.open(this.src)">
+                    <div class="file-preview-name">EvidencePhoto.png</div>
+                  </div>
+                `;
+              }
+              if (found.media.audio) {
+                mediaPreviews.innerHTML += `
+                  <div class="file-preview" style="cursor:pointer;" onclick="window.open('${found.media.audio}')">
+                    <div style="display:flex; align-items:center; justify-content:center; height:100%; font-size:24px; background:#e2e8f0;">🎙️</div>
+                    <div class="file-preview-name">AudioEvidence.wav</div>
+                  </div>
+                `;
+              }
+              if (found.media.video) {
+                mediaPreviews.innerHTML += `
+                  <div class="file-preview" style="cursor:pointer;" onclick="window.open('${found.media.video}')">
+                    <div style="display:flex; align-items:center; justify-content:center; height:100%; font-size:24px; background:#e2e8f0;">🎥</div>
+                    <div class="file-preview-name">VideoEvidence.mp4</div>
+                  </div>
+                `;
+              }
+            } else {
+              mediaBox.style.display = 'none';
+            }
+
+            // Populate Timeline
+            const timelineContainer = document.getElementById('status-timeline');
+            timelineContainer.innerHTML = '';
+
+            let lastCompletedIndex = -1;
+            found.timeline.forEach((step, idx) => {
+              if (step.completed) lastCompletedIndex = idx;
+            });
+
+            found.timeline.forEach((step, idx) => {
+              const stepDiv = document.createElement('div');
+              
+              if (idx <= lastCompletedIndex) {
+                stepDiv.className = 'timeline-step completed';
+              } else if (idx === lastCompletedIndex + 1) {
+                stepDiv.className = 'timeline-step active';
+              } else {
+                stepDiv.className = 'timeline-step';
+              }
+
+              stepDiv.innerHTML = `
+                <div class="timeline-dot"></div>
+                <div class="timeline-info">
+                  <div class="timeline-heading">
+                    <h4>${step.status}</h4>
+                    <p>${step.desc}</p>
+                  </div>
+                  <span class="timeline-date">${step.date}</span>
+                </div>
+              `;
+              timelineContainer.appendChild(stepDiv);
+            });
+          })
+          .catch(err => {
+            alert(`No complaint found with Ticket ID: ${queryId}`);
+            emptyBox.style.display = 'block';
+            resultsBox.classList.remove('active');
+          });
+      }
+
+      // Render Dashboard user history list
+      function loadMyComplaints() {
+        const container = document.getElementById('complaints-list');
+        container.innerHTML = '';
+
+        const token = localStorage.getItem('prajamitra_token');
+        if (!token) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <span class="empty-state-icon">🔒</span>
+              <h4>Dashboard Requires Login</h4>
+              <p>Please log in or register to view and manage your submitted complaints list.</p>
+              <button class="btn btn-primary" onclick="openAuthModal()">Login Account</button>
+            </div>
+          `;
+          return;
+        }
+
+        // Fetch from Express backend
+        fetch('/api/complaints/user-history', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+          .then(res => res.json())
+          .then(complaints => {
+            if (complaints.length === 0) {
+              container.innerHTML = `
+                <div class="empty-state">
+                  <span class="empty-state-icon">📝</span>
+                  <h4>No Complaints Registered Yet</h4>
+                  <p>You have not registered any grievances under this user profile.</p>
+                  <a href="complaint.html" class="btn btn-primary">Lodge a Grievance</a>
+                </div>
+              `;
+              return;
+            }
+
+            complaints.forEach(c => {
+              const card = document.createElement('div');
+              card.className = 'complaint-item-card';
+
+              let badgeClass = 'submitted';
+              if (c.status.includes('Assigned')) badgeClass = 'assigned';
+              else if (c.status.includes('Investigation')) badgeClass = 'investigation';
+              else if (c.status.includes('Resolved')) badgeClass = 'resolved';
+
+              card.innerHTML = `
+                <div class="complaint-item-main">
+                  <h4>${c.title}</h4>
+                  <div class="complaint-item-details">
+                    <span class="complaint-item-id">${c.id}</span>
+                    <span class="complaint-item-date">${c.date}</span>
+                    <span class="complaint-item-cat">${c.category}</span>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 16px;">
+                  <span class="complaint-item-badge ${badgeClass}">${c.status}</span>
+                  <button class="complaint-action-btn" onclick="directTrack('${c.id}')">Track</button>
+                </div>
+              `;
+              container.appendChild(card);
+            });
+          })
+          .catch(err => {
+            console.error(err);
+            container.innerHTML = `<p style="color:#ef4444; text-align:center;">Failed to connect to full-stack server backend. Ensure node server.js is running.</p>`;
+          });
+      }
+
+      function directTrack(ticketId) {
+        switchTab('track');
+        document.getElementById('track-input').value = ticketId;
+        trackComplaint(ticketId);
+      }
+    </script>
+  </body>
+</html>

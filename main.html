@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PrajaMitra — Citizen Grievance Portal</title>
+    <link rel="stylesheet" href="main.css" />
+  </head>
+  <body>
+    <!-- TOP GOVERNMENT STRIP -->
+    <div class="gov-strip" id="main">
+      <div class="gov-left">
+        <span class="flag"
+          ><span class="s"></span><span class="w"></span><span class="g"></span
+        ></span>
+        <b data-translate="gov_title">Government of India</b>
+        <span class="divider">|</span>
+        <span>One Nation</span>
+        <span class="divider">|</span>
+        <span>One Platform</span>
+      </div>
+      <div class="gov-right">
+        <!-- Injected dynamically by accessibility.js -->
+      </div>
+    </div>
+
+    <!-- MAIN HEADER -->
+    <header class="header">
+      <a href="#main" class="logolink">
+        <div class="brand">
+          <div class="brand-logo" style="background:none; width:auto; height:auto; border-radius:0;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="State Emblem of India" style="height:46px; width:auto;" />
+          </div>
+          <div>
+            <div class="brand-name">PrajaMitra</div>
+            <div class="brand-tag" data-translate="brand_tag">
+              Report • Track • Solve
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- Smart Search Input -->
+      <div class="search" style="position:relative;">
+        <input
+          type="text"
+          id="search-input"
+          data-translate="search_placeholder"
+          placeholder="Search complaints, departments, schemes..."
+          oninput="onSearchInput(this.value)"
+          onkeydown="if(event.key === 'Enter') triggerSearch(this.value)"
+        />
+        <button type="button" onclick="triggerSearch(document.getElementById('search-input').value)" data-translate="btn_search">Search</button>
+        
+        <!-- Suggestions dropdown list -->
+        <div id="search-suggestions" style="position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid #cbd5e1; border-radius:0 0 8px 8px; z-index:950; display:none; box-shadow:0 4px 6px rgba(0,0,0,0.15);">
+          <!-- Loaded dynamically -->
+        </div>
+      </div>
+
+      <!-- Voice Search Button -->
+      <button class="voice-btn" id="voice-search-btn" onclick="startVoiceSearch()">
+        <span class="mic">🎤</span> <span data-translate="voice_search">Voice Search</span>
+        <span class="badge-new">New</span>
+      </button>
+
+      <!-- Auth Header Wrapper -->
+      <div id="auth-header-wrapper" style="margin-left:auto;">
+        <button class="login-btn" onclick="openAuthModal()" data-translate="login_btn">👤 Login / Register</button>
+      </div>
+      <button class="menu-btn" onclick="toggleDrawer()">☰</button>
+    </header>
+
+    <div class="wrap">
+      <!-- HERO -->
+      <section class="hero">
+        <div class="hero-art"></div>
+        <h1 data-translate="hero_title">Welcome to PrajaMitra!</h1>
+        <h2 data-translate="hero_subtitle">Your Voice. Our Responsibility.</h2>
+        <p data-translate="hero_desc">
+          Report issues in your area and help us build a better and transparent
+          India.
+        </p>
+
+        <div class="chips">
+          <div class="chip c1"><span class="ic">☀</span> <span data-translate="badge_easy">Easy to Use</span></div>
+          <div class="chip c2"><span class="ic">🛡</span> <span data-translate="badge_safe">Safe &amp; Secure</span></div>
+          <div class="chip c3"><span class="ic">📍</span> <span data-translate="badge_track">Track Anytime</span></div>
+          <div class="chip c4"><span class="ic">✅</span> <span data-translate="badge_resolved">Resolved Faster</span></div>
+        </div>
+      </section>
+
+      <!-- ACTION CARDS -->
+      <section class="cards-panel">
+        <a href="complaint.html" class="link">
+          <div class="card green">
+            <div class="icon">📝</div>
+            <div class="body">
+              <div class="title" data-translate="card_register">
+                Register Complaint <span class="arrow">›</span>
+              </div>
+              <div class="sub" data-translate="card_register_sub">Lodge a new complaint</div>
+            </div>
+          </div>
+        </a>
+
+        <a href="track.html" class="link">
+          <div class="card blue">
+            <div class="icon">📍</div>
+            <div class="body">
+              <div class="title" data-translate="card_track">
+                Track Complaint <span class="arrow">›</span>
+              </div>
+              <div class="sub" data-translate="card_track_sub">Track status &amp; updates</div>
+            </div>
+          </div>
+        </a>
+
+        <a href="track.html?view=my-complaints" class="link">
+          <div class="card purple">
+            <div class="icon">📋</div>
+            <div class="body">
+              <div class="title" data-translate="card_my">My Complaints <span class="arrow">›</span></div>
+              <div class="sub" data-translate="card_my_sub">View all your complaints</div>
+            </div>
+          </div>
+        </a>
+      </section>
+
+      <!-- INFORMATION GRID (AUTHENTIC GOVT STYLE) -->
+      <div class="info-section-grid">
+        
+        <!-- Left Side Primary Content -->
+        <div style="display:grid; gap:24px;">
+          
+          <!-- Announcements scrolling Ticker -->
+          <div class="ticker-container">
+            <div style="font-weight:800; font-size:11px; text-transform:uppercase; color:#ff9933; margin-bottom:4px;">📢 Latest Announcements</div>
+            <div class="ticker-wrapper">
+              <div class="ticker-item">● Monsoon Safety Alert: Please report drainage logging issues immediately.</div>
+              <div class="ticker-item">● Grievance Portal upgraded: Added Leaflet GIS Geolocation features.</div>
+              <div class="ticker-item">● Anna Canteen reviews: Department scheduled spot audits this week.</div>
+              <div class="ticker-item">● Resolving roads: Over 2,400 damaged highway sections verified.</div>
+            </div>
+          </div>
+
+          <!-- Schemes Module -->
+          <div class="info-card">
+            <h3>📜 Active Government Schemes</h3>
+            <div class="schemes-card-grid">
+              <a href="#" class="scheme-item">
+                <h4>PM-AWAS Yojana</h4>
+                <p>Housing for All - affordable shelter for citizens across rural & urban districts.</p>
+              </a>
+              <a href="#" class="scheme-item">
+                <h4>Ayushman Bharat</h4>
+                <p>Free medical treatment insurance scheme up to ₹5 Lakhs for vulnerable families.</p>
+              </a>
+              <a href="#" class="scheme-item">
+                <h4>PM Garib Kalyan Anna Yojana</h4>
+                <p>Free food grains distribution scheme ensuring safety margins during seasons.</p>
+              </a>
+              <a href="#" class="scheme-item">
+                <h4>PM-Gram Sadak Yojana</h4>
+                <p>Connecting village sectors with highly durable all-weather highway roads.</p>
+              </a>
+            </div>
+          </div>
+
+          <!-- Recent Complaint Statistics -->
+          <div class="info-card">
+            <h3>📈 Grievance Dashboard Statistics</h3>
+            <div class="stats-counter-grid">
+              <div class="stats-card">
+                <div class="stats-num">12,480+</div>
+                <div class="stats-label">Registered Grievances</div>
+              </div>
+              <div class="stats-card s2">
+                <div class="stats-num">1,824</div>
+                <div class="stats-label">Under Investigation</div>
+              </div>
+              <div class="stats-card s3">
+                <div class="stats-num">10,656</div>
+                <div class="stats-label">Resolved Actions (92%)</div>
+              </div>
+            </div>
+            <p style="font-size:12px; color:#64748b; text-align:center;">Updated real-time from National Informatics Center database servers.</p>
+          </div>
+
+          <!-- Success Stories -->
+          <div class="info-card">
+            <h3>🌟 Resolution Success Stories</h3>
+            <div class="success-stories-grid">
+              <div class="success-card">
+                <div class="success-img" style="background-image: url('https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=300&auto=format&fit=crop');"></div>
+                <div class="success-content">
+                  <h4>Potholes Filled in Guntur District</h4>
+                  <p>Citizen reported heavy water logging and potholes on Ring Road. Assigned to Municipal Officer, resolved within 4 days.</p>
+                </div>
+              </div>
+              <div class="success-card">
+                <div class="success-img" style="background-image: url('https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=300&auto=format&fit=crop');"></div>
+                <div class="success-content">
+                  <h4>Ration Supply Audit in Visakhapatnam</h4>
+                  <p>Quality grievance lodged against a local ration shop. Food safety officer inspected, corrected weighing machines.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FAQ Accordion -->
+          <div class="info-card">
+            <h3>❓ Frequently Asked Questions</h3>
+            <div class="faq-list">
+              <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-header">Q1: How do I track my submitted complaint? <span>▼</span></div>
+                <div class="faq-body">You can enter your Complaint ID directly into the homepage widget tracker or go to the Track Complaint tab. If logged in, check My Complaints menu.</div>
+              </div>
+              <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-header">Q2: Can I report complaints anonymously? <span>▼</span></div>
+                <div class="faq-body">Yes! On Step 2 of the lodging page, simply check the "Anonymous Submission" toggle. Your name, email, and phone will be hidden from public tracking.</div>
+              </div>
+              <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-header">Q3: What documents can I attach? <span>▼</span></div>
+                <div class="faq-body">You can attach photos of the issue, video recordings, or PDFs up to 10MB in size. You can also capture photos directly from your camera inside our portal.</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Side Sidebar content -->
+        <div style="display:grid; gap:24px; height:fit-content;">
+          
+          <!-- Home Quick Tracker widget -->
+          <div class="info-card" style="border-left: 4px solid #0052cc;">
+            <h3 style="border:none; margin:0; padding:0;">📍 Quick Track Widget</h3>
+            <p style="font-size:12px; color:#64748b; margin-top:6px; margin-bottom:12px;">Quick check complaint progress status.</p>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="quick-track-input" class="form-control" placeholder="ID (e.g. PM-2026-X839A)" style="padding:10px;" />
+              <button class="btn btn-primary" onclick="quickTrackTicket()" style="padding:10px 14px;">Track</button>
+            </div>
+          </div>
+
+          <!-- Emergency Helplines -->
+          <div class="info-card" style="border-left: 4px solid #ef4444;">
+            <h3>🚨 Emergency Contacts</h3>
+            <div class="emergency-grid">
+              <div class="emergency-item">
+                <span class="emergency-name">National Emergency response</span>
+                <a href="tel:112" class="emergency-number">112</a>
+              </div>
+              <div class="emergency-item">
+                <span class="emergency-name">Women Helpline</span>
+                <a href="tel:1091" class="emergency-number">1091</a>
+              </div>
+              <div class="emergency-item">
+                <span class="emergency-name">Citizen Support Center</span>
+                <a href="tel:1800111122" class="emergency-number">1800-111-122</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Public Awareness Cards -->
+          <div class="info-card">
+            <h3>💡 Public Awareness</h3>
+            <p style="font-size:13px; color:#475569; line-height:1.5; margin-bottom:10px;"><b>Clean Water Mission:</b> Report leaks to conserve water resources. Help local municipalities resolve pipeline bursts.</p>
+            <p style="font-size:13px; color:#475569; line-height:1.5;"><b>Right to Grievance:</b> Citizens are legally entitled to receive response updates on civil grievances within 15 working days.</p>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Official Government Footer -->
+    <footer class="official-footer">
+      <div class="footer-columns">
+        <div class="footer-col">
+          <h4>Directories</h4>
+          <ul>
+            <li><a href="#">President of India</a></li>
+            <li><a href="#">Prime Minister Office</a></li>
+            <li><a href="#">Cabinet Ministers</a></li>
+            <li><a href="#">State Chief Ministers</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Citizen Help</h4>
+          <ul>
+            <li><a href="#">RTI Online Portal</a></li>
+            <li><a href="#">National Portal of India</a></li>
+            <li><a href="#">Digital India Schemes</a></li>
+            <li><a href="#">MyGov Dialogue Portal</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Public Utilities</h4>
+          <ul>
+            <li><a href="#">Ministry of Transport</a></li>
+            <li><a href="#">Ministry of Health & Family Welfare</a></li>
+            <li><a href="#">Ministry of Consumer Affairs</a></li>
+            <li><a href="#">Ministry of Communications</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Social Connections</h4>
+          <ul>
+            <li><a href="#">Twitter Page @NIC_India</a></li>
+            <li><a href="#">Facebook Office</a></li>
+            <li><a href="#">YouTube Channels</a></li>
+            <li><a href="#">RSS News Feed</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 PrajaMitra Complaint Redressal Portal. Handled by National Informatics Centre (NIC) India.</p>
+        <p style="margin-top:6px; font-size:10px; color:#64748b;">Website complies with World Wide Web Consortium (W3C) Web Content Accessibility Guidelines (WCAG) 2.0 level AA standard specifications.</p>
+      </div>
+    </footer>
+
+    <!-- Scripts Injection -->
+    <script src="translate.js"></script>
+    <script src="accessibility.js"></script>
+    <script>
+      // Accordion FAQ Toggle
+      function toggleFaq(item) {
+        item.classList.toggle('active');
+      }
+
+      // Quick track ticket input
+      function quickTrackTicket() {
+        const idVal = document.getElementById('quick-track-input').value.trim();
+        if (!idVal) {
+          alert('Please enter a ticket number!');
+          return;
+        }
+        location.href = `track.html?id=${idVal}`;
+      }
+
+      // Voice Search Logic
+      function startVoiceSearch() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          alert("Speech recognition is not supported in this browser.");
+          return;
+        }
+        const recognition = new SpeechRecognition();
+        recognition.lang = localStorage.getItem('prajamitra_lang') || 'en';
+        const btn = document.getElementById('voice-search-btn');
+        btn.innerHTML = '🎙️ Listening...';
+        btn.style.color = '#ef4444';
+        
+        recognition.onresult = function(event) {
+          const text = event.results[0][0].transcript;
+          document.getElementById('search-input').value = text;
+          btn.innerHTML = '🎤 Voice Search';
+          btn.style.color = '';
+          triggerSearch(text);
+        };
+        recognition.onerror = function() {
+          btn.innerHTML = '🎤 Voice Search';
+          btn.style.color = '';
+        };
+        recognition.start();
+      }
+
+      // Suggestions search database queries
+      function onSearchInput(query) {
+        const suggestionsBox = document.getElementById('search-suggestions');
+        if (!query.trim()) {
+          suggestionsBox.style.display = 'none';
+          return;
+        }
+
+        fetch(`http://localhost:3000/api/complaints/search?q=${encodeURIComponent(query)}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.length === 0) {
+              suggestionsBox.style.display = 'none';
+              return;
+            }
+            suggestionsBox.innerHTML = '';
+            suggestionsBox.style.display = 'block';
+            
+            data.forEach(item => {
+              const div = document.createElement('div');
+              div.style.padding = '10px 14px';
+              div.style.cursor = 'pointer';
+              div.style.fontWeight = '600';
+              div.style.fontSize = '13px';
+              div.className = 'drop-item-suggestion';
+              div.innerText = item.title;
+              div.onclick = () => {
+                suggestionsBox.style.display = 'none';
+                location.href = item.url;
+              };
+              suggestionsBox.appendChild(div);
+            });
+          })
+          .catch(err => console.error(err));
+      }
+
+      // Routing triggers
+      function triggerSearch(query) {
+        if (!query.trim()) return;
+        
+        // Show check satisfaction animation inside search
+        const btn = document.querySelector('.search button');
+        const oldText = btn.innerText;
+        btn.innerText = '✓ Success';
+        btn.style.backgroundColor = '#16a34a';
+        
+        setTimeout(() => {
+          btn.innerText = oldText;
+          btn.style.backgroundColor = '';
+          
+          const q = query.toLowerCase();
+          if (q.includes('road') || q.includes('pothole') || q.includes('street') || q.includes('garbage') || q.includes('streetlight') || q.includes('highway') || q.includes('drainage')) {
+            location.href = 'comregister.html#civic';
+          } else if (q.includes('ration') || q.includes('food') || q.includes('canteen') || q.includes('water') || q.includes('meal') || q.includes('welfare')) {
+            location.href = 'comregister.html#food';
+          } else if (q.includes('school') || q.includes('education') || q.includes('college') || q.includes('scholarship') || q.includes('teacher') || q.includes('fee')) {
+            location.href = 'comregister.html#education';
+          } else if (q.includes('hospital') || q.includes('doctor') || q.includes('medicine') || q.includes('health') || q.includes('ambulance') || q.includes('clinic')) {
+            location.href = 'comregister.html#health';
+          } else {
+            location.href = 'comregister.html#other';
+          }
+        }, 600);
+      }
+
+      // Close suggestions on outside click
+      window.addEventListener('click', (e) => {
+        if (!e.target.closest('.search')) {
+          document.getElementById('search-suggestions').style.display = 'none';
+        }
+      });
+    </script>
+  </body>
+</html>

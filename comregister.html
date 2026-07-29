@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PrajaMitra — Lodge a Grievance</title>
+    <link rel="stylesheet" href="main.css" />
+    <!-- Leaflet.js Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  </head>
+  <body>
+    <!-- TOP GOVERNMENT STRIP -->
+    <div class="gov-strip" id="main">
+      <div class="gov-left">
+        <span class="flag"
+          ><span class="s"></span><span class="w"></span><span class="g"></span
+        ></span>
+        <b data-translate="gov_title">Government of India</b>
+        <span class="divider">|</span>
+        <span>One Nation</span>
+        <span class="divider">|</span>
+        <span>One Platform</span>
+      </div>
+      <div class="gov-right">
+        <!-- Injected dynamically by accessibility.js -->
+      </div>
+    </div>
+
+    <!-- MAIN HEADER -->
+    <header class="header">
+      <a href="main.html" class="logolink">
+        <div class="brand">
+          <div class="brand-logo" style="background:none; width:auto; height:auto; border-radius:0;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="State Emblem of India" style="height:46px; width:auto;" />
+          </div>
+          <div>
+            <div class="brand-name">PrajaMitra</div>
+            <div class="brand-tag" data-translate="brand_tag">
+              Report • Track • Solve
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <div class="search">
+        <input
+          type="text"
+          placeholder="Search complaints, departments, schemes..."
+        />
+        <button>Search</button>
+      </div>
+
+      <button class="voice-btn">
+        <span class="mic">🎤</span> Voice Search
+        <span class="badge-new">New</span>
+      </button>
+
+      <!-- Injected dynamically by accessibility.js -->
+      <div id="auth-header-wrapper" style="margin-left:auto;">
+        <button class="login-btn" onclick="openAuthModal()" data-translate="login_btn">👤 Login / Register</button>
+      </div>
+      <button class="menu-btn" onclick="toggleDrawer()">☰</button>
+    </header>
+
+    <!-- MAIN CONTENT FORM WRAPPER -->
+    <main class="wrap">
+      <div class="form-container" id="form-container-box">
+        <div class="form-card">
+          <!-- Banner -->
+          <div class="form-header-banner">
+            <h2 data-translate="form_grievance_title">Lodge a Public Grievance</h2>
+            <p data-translate="form_grievance_desc">Please complete the steps below to report your issue. Your complaint will be directed to the concerned government department.</p>
+          </div>
+
+          <!-- Stepper progress -->
+          <div class="stepper">
+            <div class="stepper-progress" id="stepper-progress" style="width: 0%;"></div>
+            <div class="step active" id="step-node-1" style="flex:1;">
+              <div class="step-number">1</div>
+              <div class="step-label" data-translate="step1_title">Department &amp; Issue</div>
+            </div>
+            <div class="step" id="step-node-2" style="flex:1;">
+              <div class="step-number">2</div>
+              <div class="step-label" data-translate="step2_title">Location &amp; Uploads</div>
+            </div>
+          </div>
+
+          <!-- Form Element -->
+          <form id="grievance-form" onsubmit="event.preventDefault();">
+            
+            <!-- STEP 1: Department & Details -->
+            <div class="form-step-content active" id="step-content-1">
+              <div class="form-group">
+                <label for="grievance-category" data-translate="label_category">Select Grievance Category <span class="required">*</span></label>
+                <select id="grievance-category" class="form-control" onchange="onCategoryChange()">
+                  <option value="food">🥣 Food &amp; Public Welfare</option>
+                  <option value="civic">🏢 Civic Infrastructure</option>
+                  <option value="education">🎓 Education</option>
+                  <option value="health">❤️ Health Services</option>
+                  <option value="other">🔲 Other Issue</option>
+                </select>
+              </div>
+
+              <!-- Other Category Text Input (triggers only when select is Other) -->
+              <div class="form-group" id="other-category-wrapper" style="display:none;">
+                <label for="other-category-text">Specify Category Name <span class="required">*</span></label>
+                <input type="text" id="other-category-text" class="form-control" placeholder="e.g. Public Parks, Street Noise" />
+              </div>
+
+              <div class="form-group">
+                <label for="subcategory-text" data-translate="label_subcategory">Specify Subcategory <span class="required">*</span></label>
+                <input type="text" id="subcategory-text" class="form-control" placeholder="Specify subcategory details (e.g. Water logging, delayed mid-day meal)" required />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="grievance-title" data-translate="label_short_title">Short Title of Grievance <span class="required">*</span></label>
+                  <input type="text" id="grievance-title" class="form-control" placeholder="e.g. Broken drainage pipe on road 3" required />
+                </div>
+                <div class="form-group">
+                  <label data-translate="label_severity">Severity Level <span class="required">*</span></label>
+                  <div class="severity-level">
+                    <div class="sev-btn low" onclick="selectSeverity('Low', this)">Low</div>
+                    <div class="sev-btn medium selected" onclick="selectSeverity('Medium', this)">Medium</div>
+                    <div class="sev-btn high" onclick="selectSeverity('High', this)">High</div>
+                  </div>
+                  <input type="hidden" id="selected-severity" value="Medium" required />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="grievance-desc" data-translate="label_desc">Detailed Grievance Description (Optional)</label>
+                <textarea id="grievance-desc" class="form-control" maxlength="2000" placeholder="Please describe the issue in detail (Optional)..."></textarea>
+                <span class="upload-hint" style="float: right;" id="char-counter">0 / 2000 chars</span>
+              </div>
+
+              <div style="margin-top: 14px;">
+                <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer;">
+                  <input type="checkbox" id="anonymous-check" style="width:16px; height:16px;" />
+                  <span>Submit Grievance Anonymously (Hide details from public tracking)</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- STEP 2: Location & Uploads -->
+            <div class="form-step-content" id="step-content-2">
+              
+              <!-- Location Choices (Optional) -->
+              <div class="form-group">
+                <label>Grievance Location (Optional)</label>
+                <div class="map-selector-box">
+                  <div class="map-tabs">
+                    <button type="button" class="map-tab-btn active" id="tab-live-btn" onclick="selectMapTab('live')">Option 1: Live Geolocation GPS</button>
+                    <button type="button" class="map-tab-btn" id="tab-manual-btn" onclick="selectMapTab('manual')">Option 2: Search &amp; Manual Pin</button>
+                  </div>
+                  <div class="map-body-wrapper" id="leaflet-map-container"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                  <span class="upload-hint" id="gps-status" style="font-weight:700;">No coordinates pinned yet.</span>
+                  <button type="button" class="action-addon-btn" id="detect-gps-btn" onclick="fetchLiveGPS()">📍 Fetch Live Location</button>
+                </div>
+                <input type="hidden" id="latitude-val" />
+                <input type="hidden" id="longitude-val" />
+              </div>
+
+              <!-- Media Capture & upload (Optional) -->
+              <div class="form-group">
+                <label data-translate="label_uploads">Attach Supporting Documents/Images (Optional)</label>
+                
+                <!-- Browser Direct Camera Access -->
+                <div style="display:flex; gap:10px; margin-bottom:12px;">
+                  <button type="button" class="action-addon-btn" style="flex:1; justify-content:center;" onclick="openBrowserCamera()">📸 Capture Photo</button>
+                  <button type="button" class="action-addon-btn" style="flex:1; justify-content:center;" id="btn-audio-rec" onclick="toggleAudioRecording()">🎙️ Record Audio</button>
+                </div>
+
+                <!-- Hidden video preview container for live capture -->
+                <div class="camera-modal-container" id="camera-capture-box" style="display:none;">
+                  <video class="video-feed-preview" id="camera-feed" autoplay playsinline></video>
+                  <canvas id="camera-canvas" style="display:none;" width="320" height="240"></canvas>
+                  <div class="camera-controls-row">
+                    <button type="button" class="btn btn-primary" onclick="takeSnapshot()">Take Snapshot</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeBrowserCamera()">Cancel</button>
+                  </div>
+                </div>
+
+                <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+                  <span class="upload-icon">📁</span>
+                  <span class="upload-text"><span>Click to upload</span> files manually</span>
+                  <span class="upload-hint">Upload photos, videos, or audio recordings (Max size 10MB each)</span>
+                  <input type="file" id="file-input" style="display: none;" multiple accept="image/*,video/*,audio/*,application/pdf" onchange="handleFileSelect(event)" />
+                </div>
+                <div class="preview-container" id="preview-container"></div>
+              </div>
+
+              <div style="margin-top:20px; padding:15px; background:#f8fafc; border-radius:8px; border:1px solid #cbd5e1;">
+                <label style="display: flex; align-items: flex-start; gap: 8px; font-weight: normal; font-size: 13px; color: #475569; cursor: pointer;">
+                  <input type="checkbox" id="consent-check" style="margin-top: 3px;" required />
+                  I hereby declare that the details furnished above are true and correct to the best of my knowledge. I am aware that filing false grievances is subject to official penalties.
+                </label>
+              </div>
+            </div>
+
+            <!-- Footer navigation -->
+            <div class="form-footer">
+              <button type="button" class="btn btn-secondary" id="btn-back" onclick="navigateStep(-1)" disabled>
+                &larr; Back
+              </button>
+              <button type="button" class="btn btn-primary" id="btn-next" onclick="navigateStep(1)">
+                Next Step &rarr;
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+      <!-- Grievance success receipt panel -->
+      <div class="form-container" id="receipt-container-box" style="display:none;">
+        <div class="form-card" style="padding:40px; text-align:center;">
+          <div class="success-checkmark-wrap" style="width:80px; height:80px; font-size:40px;">✓</div>
+          <h2 style="font-size:26px; font-weight:800; color:#0f172a; margin-bottom:8px;">Grievance Submitted Successfully!</h2>
+          <p style="color:#64748b; font-size:14px; margin-bottom:24px;">Your complaint has been successfully registered in the portal database. Please download your receipt below.</p>
+          
+          <div class="ticket-info-box" id="print-receipt-section" style="max-width:540px; margin:0 auto 24px; text-align:left; border:1px solid #cbd5e1; border-radius:12px; padding:24px;">
+            <h3 style="border-bottom:1px solid #e2e8f0; padding-bottom:12px; margin-bottom:12px; color:#1f7a3f;">PRASAMITRA GRIEVANCE RECEIPT</h3>
+            <div class="ticket-field">
+              <span>Complaint Ticket ID</span>
+              <span class="ticket-val-id" id="receipt-ticket-id">PM-2026-X2938</span>
+            </div>
+            <div class="ticket-field">
+              <span>Submission Date &amp; Time</span>
+              <span class="ticket-val-bold" id="receipt-date">July 29, 2026</span>
+            </div>
+            <div class="ticket-field">
+              <span>Grievance Title</span>
+              <span class="ticket-val-bold" id="receipt-title">Broken road on sector 4</span>
+            </div>
+            <div class="ticket-field">
+              <span>Assigned Department</span>
+              <span class="ticket-val-bold" id="receipt-dept">Department of Roads &amp; Transport</span>
+            </div>
+            <div class="ticket-field">
+              <span>Estimated Resolution Date</span>
+              <span class="ticket-val-bold" id="receipt-eta">Aug 05, 2026</span>
+            </div>
+            <div style="margin-top:20px; font-size:10px; color:#94a3b8; text-align:center; border-top:1px dashed #cbd5e1; padding-top:12px;">
+              This is a computer-generated grievance receipt. No signature is required.
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:center; gap:12px; max-width:540px; margin:0 auto;">
+            <button class="btn btn-secondary" onclick="location.href='main.html'" style="flex:1; justify-content:center;">Return Home</button>
+            <button class="btn btn-secondary" onclick="printReceipt()" style="flex:1; justify-content:center; background:#ff9933; color:#white; border:none;">Download Receipt (PDF)</button>
+            <button class="btn btn-primary" id="receipt-track-btn" style="flex:1; justify-content:center;">Track Complaint</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Leaflet JS Map -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="translate.js"></script>
+    <script src="accessibility.js"></script>
+    
+    <script>
+      let currentStep = 1;
+      let selectedSeverity = 'Medium';
+      let map = null;
+      let marker = null;
+      let activeMapTab = 'live';
+      let cameraStream = null;
+      let audioRecorder = null;
+      let audioChunks = [];
+      let isAudioRecording = false;
+
+      // Local variables to hold media blobs for submission
+      let attachedPhotoBlob = null;
+      let attachedAudioBlob = null;
+      let manualFiles = [];
+
+      window.onload = function() {
+        const hash = window.location.hash.substring(1);
+        const select = document.getElementById('grievance-category');
+        
+        if (hash && ['food', 'civic', 'education', 'health', 'other'].includes(hash)) {
+          select.value = hash;
+        }
+        onCategoryChange();
+        updateStepperUI();
+        initLeafletMap();
+      };
+
+      // Select Category change trigger
+      function onCategoryChange() {
+        const cat = document.getElementById('grievance-category').value;
+        const otherWrap = document.getElementById('other-category-wrapper');
+        const otherText = document.getElementById('other-category-text');
+        
+        if (cat === 'other') {
+          otherWrap.style.display = 'block';
+          otherText.required = true;
+        } else {
+          otherWrap.style.display = 'none';
+          otherText.required = false;
+          otherText.value = '';
+        }
+      }
+
+      function selectSeverity(level, btn) {
+        document.querySelectorAll('.severity-level .sev-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedSeverity = level;
+      }
+
+      // Stepper UI controller
+      function updateStepperUI() {
+        const progress = ((currentStep - 1) / 1) * 100;
+        document.getElementById('stepper-progress').style.width = progress + '%';
+        
+        for (let i = 1; i <= 2; i++) {
+          const node = document.getElementById('step-node-' + i);
+          if (i < currentStep) node.className = 'step completed';
+          else if (i === currentStep) node.className = 'step active';
+          else node.className = 'step';
+
+          const content = document.getElementById('step-content-' + i);
+          if (i === currentStep) content.classList.add('active');
+          else content.classList.remove('active');
+        }
+
+        const back = document.getElementById('btn-back');
+        const next = document.getElementById('btn-next');
+
+        back.disabled = (currentStep === 1);
+        if (currentStep === 2) {
+          next.innerHTML = 'Submit Complaint ✓';
+        } else {
+          next.innerHTML = 'Next Step &rarr;';
+        }
+      }
+
+      function validateStep() {
+        if (currentStep === 1) {
+          const cat = document.getElementById('grievance-category').value;
+          const otherText = document.getElementById('other-category-text').value;
+          const sub = document.getElementById('subcategory-text').value;
+          const title = document.getElementById('grievance-title').value;
+
+          if (cat === 'other' && !otherText.trim()) {
+            alert('Please specify the category name!');
+            return false;
+          }
+          if (!sub.trim()) {
+            alert('Please specify the subcategory detail!');
+            return false;
+          }
+          if (!title.trim()) {
+            alert('Please enter a title for your grievance!');
+            return false;
+          }
+          return true;
+        }
+        if (currentStep === 2) {
+          const consent = document.getElementById('consent-check').checked;
+          if (!consent) {
+            alert('You must accept the terms declaration before submitting.');
+            return false;
+          }
+          return true;
+        }
+        return true;
+      }
+
+      function navigateStep(direction) {
+        if (direction === 1) {
+          if (!validateStep()) return;
+          if (currentStep === 2) {
+            submitComplaintAPI();
+            return;
+          }
+          currentStep++;
+        } else {
+          currentStep--;
+        }
+        updateStepperUI();
+        window.scrollTo(0, 0);
+      }
+
+      // ==========================================================================
+      // LEAFLET MAP & GPS GEOLOCATION LOGIC
+      // ==========================================================================
+      function initLeafletMap() {
+        // Initialize map centered at India Guntur coords (16.3067, 80.4365)
+        map = L.map('leaflet-map-container').setView([16.3067, 80.4365], 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        marker = L.marker([16.3067, 80.4365], { draggable: true }).addTo(map);
+        
+        marker.on('dragend', () => {
+          const pos = marker.getLatLng();
+          updatePinnedCoordinates(pos.lat, pos.lng);
+        });
+
+        map.on('click', (e) => {
+          if (activeMapTab === 'manual') {
+            marker.setLatLng(e.latlng);
+            updatePinnedCoordinates(e.latlng.lat, e.latlng.lng);
+          }
+        });
+      }
+
+      function selectMapTab(tab) {
+        activeMapTab = tab;
+        document.getElementById('tab-live-btn').className = tab === 'live' ? 'map-tab-btn active' : 'map-tab-btn';
+        document.getElementById('tab-manual-btn').className = tab === 'manual' ? 'map-tab-btn active' : 'map-tab-btn';
+        
+        if (tab === 'live') {
+          fetchLiveGPS();
+        }
+      }
+
+      function fetchLiveGPS() {
+        const statusText = document.getElementById('gps-status');
+        const detectBtn = document.getElementById('detect-gps-btn');
+        detectBtn.innerText = 'Locating...';
+        
+        if (!navigator.geolocation) {
+          statusText.innerText = 'GPS is not supported by your browser.';
+          detectBtn.innerText = '📍 Fetch Live Location';
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            map.setView([lat, lng], 16);
+            marker.setLatLng([lat, lng]);
+            updatePinnedCoordinates(lat, lng);
+            detectBtn.innerText = '📍 Fetch Live Location';
+          },
+          (err) => {
+            // Fallback mock coordinates if user denies GPS permission
+            const lat = 16.3067 + (Math.random() - 0.5) * 0.02;
+            const lng = 80.4365 + (Math.random() - 0.5) * 0.02;
+            map.setView([lat, lng], 15);
+            marker.setLatLng([lat, lng]);
+            updatePinnedCoordinates(lat, lng);
+            statusText.innerText = `GPS Permission Denied. Simulation coordinates used.`;
+            statusText.style.color = '#dc2626';
+            detectBtn.innerText = '📍 Fetch Live Location';
+          },
+          { enableHighAccuracy: true, timeout: 5000 }
+        );
+      }
+
+      function updatePinnedCoordinates(lat, lng) {
+        document.getElementById('latitude-val').value = lat;
+        document.getElementById('longitude-val').value = lng;
+        document.getElementById('gps-status').innerText = `✓ Coordinates Pinned: ${lat.toFixed(5)}° N, ${lng.toFixed(5)}° E`;
+        document.getElementById('gps-status').style.color = '#1f7a3f';
+      }
+
+      // ==========================================================================
+      // CAMERA PHOTO CAPTURE & AUDIO RECORDER
+      // ==========================================================================
+      function openBrowserCamera() {
+        const box = document.getElementById('camera-capture-box');
+        const video = document.getElementById('camera-feed');
+        box.style.display = 'flex';
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+          .then(stream => {
+            cameraStream = stream;
+            video.srcObject = stream;
+          })
+          .catch(err => {
+            alert('Webcam access was denied or is not available. Please upload a photo manually.');
+            box.style.display = 'none';
+          });
+      }
+
+      function closeBrowserCamera() {
+        const box = document.getElementById('camera-capture-box');
+        box.style.display = 'none';
+        if (cameraStream) {
+          cameraStream.getTracks().forEach(track => track.stop());
+        }
+      }
+
+      function takeSnapshot() {
+        const video = document.getElementById('camera-feed');
+        const canvas = document.getElementById('camera-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Draw current video frame onto canvas
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        canvas.toBlob(blob => {
+          attachedPhotoBlob = blob;
+          
+          // Display in file preview area
+          const container = document.getElementById('preview-container');
+          
+          // Remove old snaps
+          const old = container.querySelector('.file-preview[data-snap="true"]');
+          if (old) old.remove();
+
+          const preview = document.createElement('div');
+          preview.className = 'file-preview';
+          preview.dataset.snap = 'true';
+          preview.innerHTML = `
+            <img src="${URL.createObjectURL(blob)}" alt="Captured Snapshot">
+            <div class="file-preview-name">CapturedSnap.png</div>
+            <button type="button" class="file-remove-btn" onclick="attachedPhotoBlob=null; this.parentElement.remove()">×</button>
+          `;
+          container.appendChild(preview);
+          
+          closeBrowserCamera();
+        }, 'image/png');
+      }
+
+      // Audio recording logic
+      function toggleAudioRecording() {
+        const btn = document.getElementById('btn-audio-rec');
+        
+        if (isAudioRecording) {
+          // Stop recording
+          audioRecorder.stop();
+          btn.innerText = '🎙️ Record Audio';
+          btn.style.backgroundColor = '';
+          btn.style.color = '';
+          isAudioRecording = false;
+        } else {
+          // Start recording
+          navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+              audioRecorder = new MediaRecorder(stream);
+              audioChunks = [];
+              
+              audioRecorder.ondataavailable = e => {
+                audioChunks.push(e.data);
+              };
+
+              audioRecorder.onstop = () => {
+                attachedAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                
+                const container = document.getElementById('preview-container');
+                const old = container.querySelector('.file-preview[data-audio="true"]');
+                if (old) old.remove();
+
+                const preview = document.createElement('div');
+                preview.className = 'file-preview';
+                preview.dataset.audio = 'true';
+                preview.innerHTML = `
+                  <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 24px; background: #e2e8f0; color: #475569;">🎙️</div>
+                  <div class="file-preview-name">VoiceNote.wav</div>
+                  <button type="button" class="file-remove-btn" onclick="attachedAudioBlob=null; this.parentElement.remove()">×</button>
+                `;
+                container.appendChild(preview);
+
+                // Stop tracks to release mic
+                stream.getTracks().forEach(t => t.stop());
+              };
+
+              audioRecorder.start();
+              btn.innerText = '⏹️ Stop Recording';
+              btn.style.backgroundColor = '#dc2626';
+              btn.style.color = '#fff';
+              isAudioRecording = true;
+            })
+            .catch(err => {
+              alert('Microphone access denied or not available.');
+            });
+        }
+      }
+
+      // Classic manual uploads preview
+      function handleFileSelect(e) {
+        const files = e.target.files;
+        const container = document.getElementById('preview-container');
+        
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          manualFiles.push(file);
+          
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            const preview = document.createElement('div');
+            preview.className = 'file-preview';
+            preview.dataset.name = file.name;
+            
+            let mediaHtml = '';
+            if (file.type.startsWith('image/')) {
+              mediaHtml = `<img src="${event.target.result}" alt="${file.name}">`;
+            } else {
+              mediaHtml = `<div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 24px; background: #e2e8f0; color: #475569;">📄</div>`;
+            }
+            
+            preview.innerHTML = `
+              ${mediaHtml}
+              <div class="file-preview-name">${file.name}</div>
+              <button type="button" class="file-remove-btn" onclick="removeManualFile('${file.name}', this)">×</button>
+            `;
+            container.appendChild(preview);
+          }
+          if (file.type.startsWith('image/')) {
+            reader.readAsDataURL(file);
+          } else {
+            const preview = document.createElement('div');
+            preview.className = 'file-preview';
+            preview.dataset.name = file.name;
+            preview.innerHTML = `
+              <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 24px; background: #e2e8f0; color: #475569;">📄</div>
+              <div class="file-preview-name">${file.name}</div>
+              <button type="button" class="file-remove-btn" onclick="removeManualFile('${file.name}', this)">×</button>
+            `;
+            container.appendChild(preview);
+          }
+        }
+      }
+
+      function removeManualFile(name, btn) {
+        manualFiles = manualFiles.filter(f => f.name !== name);
+        btn.parentElement.remove();
+      }
+
+      // Character counter
+      document.getElementById('grievance-desc').oninput = function() {
+        document.getElementById('char-counter').innerText = this.value.length + ' / 2000 chars';
+      };
+
+      // ==========================================================================
+      // FORM SUBMIT API CALL TO server.js backend
+      // ==========================================================================
+      function submitComplaintAPI() {
+        const nextBtn = document.getElementById('btn-next');
+        nextBtn.innerText = 'Submitting...';
+        nextBtn.disabled = true;
+
+        const category = document.getElementById('grievance-category').value;
+        const otherCategoryText = document.getElementById('other-category-text').value;
+        const subcategory = document.getElementById('subcategory-text').value;
+        const title = document.getElementById('grievance-title').value;
+        const description = document.getElementById('grievance-desc').value;
+        const severity = selectedSeverity;
+        const lat = document.getElementById('latitude-val').value;
+        const lng = document.getElementById('longitude-val').value;
+        const anonymous = document.getElementById('anonymous-check').checked;
+
+        // Gather email/phone from local storage if logged in, otherwise mock
+        const isAuth = !!localStorage.getItem('prajamitra_token');
+        const name = isAuth ? 'Registered Citizen' : 'Anonymous Reporter';
+        const phone = localStorage.getItem('prajamitra_user_phone') || '';
+        const email = localStorage.getItem('prajamitra_user_email') || '';
+
+        // Build Multi-part Form Data
+        const formData = new FormData();
+        formData.append('category', category === 'other' ? otherCategoryText : category);
+        formData.append('subcategory', subcategory);
+        formData.append('title', title);
+        formData.append('description', description);
+        formData.append('severity', severity);
+        formData.append('latitude', lat);
+        formData.append('longitude', lng);
+        formData.append('anonymous', anonymous ? 'true' : 'false');
+        formData.append('name', name);
+        formData.append('phone', phone);
+        formData.append('email', email);
+
+        // Append recorded blobs
+        if (attachedPhotoBlob) {
+          formData.append('photo', attachedPhotoBlob, 'photo.png');
+        }
+        if (attachedAudioBlob) {
+          formData.append('audio', attachedAudioBlob, 'audio.wav');
+        }
+
+        // Append manual files uploads if any (first photo/video if available)
+        manualFiles.forEach(file => {
+          if (file.type.startsWith('image/')) {
+            formData.append('photo', file);
+          } else if (file.type.startsWith('video/')) {
+            formData.append('video', file);
+          } else if (file.type.startsWith('audio/')) {
+            formData.append('audio', file);
+          }
+        });
+
+        // Submit fetch request to express backend server
+        fetch('/api/complaints', {
+          method: 'POST',
+          body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            alert('Submission error: ' + data.error);
+            nextBtn.innerText = 'Submit Complaint ✓';
+            nextBtn.disabled = false;
+          } else {
+            // Show success receipt
+            document.getElementById('form-container-box').style.display = 'none';
+            document.getElementById('receipt-container-box').style.display = 'block';
+
+            // Populate receipt details
+            document.getElementById('receipt-ticket-id').innerText = data.id;
+            document.getElementById('receipt-date').innerText = data.date;
+            document.getElementById('receipt-title').innerText = data.title;
+            document.getElementById('receipt-dept').innerText = data.dept;
+            document.getElementById('receipt-eta').innerText = data.eta;
+            
+            document.getElementById('receipt-track-btn').onclick = () => {
+              location.href = `track.html?id=${data.id}`;
+            };
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          alert('Error connecting to backend server. Make sure the Node server is active!');
+          nextBtn.innerText = 'Submit Complaint ✓';
+          nextBtn.disabled = false;
+        });
+      }
+
+      function printReceipt() {
+        window.print();
+      }
+    </script>
+  </body>
+</html>
