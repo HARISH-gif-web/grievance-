@@ -1,5 +1,7 @@
 // accessibility.js - Controls accessibility toggles, translation loading, auth modals, and menus across all pages.
 
+window.API_BASE = (window.location.protocol === 'file:' || !window.location.host) ? 'http://localhost:3000' : '';
+
 document.addEventListener('DOMContentLoaded', () => {
   injectAccessibilityLayouts();
   checkAuthStatus();
@@ -115,15 +117,7 @@ function injectAccessibilityLayouts() {
           </div>
           <div class="form-group">
             <label>Mobile Number <span class="required">*</span></label>
-            <div class="input-with-action">
-              <input type="tel" id="reg-phone" class="form-control" placeholder="10-digit number" pattern="[0-9]{10}" required>
-              <button type="button" class="action-addon-btn" id="reg-otp-btn" onclick="sendAuthOTP()">Send OTP</button>
-            </div>
-          </div>
-          <div class="form-group" id="reg-otp-box" style="display:none;">
-            <label>OTP Code <span class="required">*</span></label>
-            <input type="text" id="reg-otp-input" class="form-control" placeholder="Enter OTP (Enter 2026)">
-            <span class="upload-hint" style="color:#16a34a;" id="reg-otp-status">Enter code 2026 to verify phone.</span>
+            <input type="tel" id="reg-phone" class="form-control" placeholder="10-digit number" pattern="[0-9]{10}" required>
           </div>
           <div class="form-group">
             <label>Password <span class="required">*</span></label>
@@ -306,34 +300,6 @@ function switchAuthView(viewName) {
   }
 }
 
-// OTP simulated flow
-let isAuthPhoneVerified = false;
-function sendAuthOTP() {
-  const phone = document.getElementById('reg-phone').value;
-  if (!phone || phone.length !== 10) {
-    alert('Please enter a valid 10-digit mobile number!');
-    return;
-  }
-  document.getElementById('reg-otp-btn').innerText = 'Sending...';
-  setTimeout(() => {
-    document.getElementById('reg-otp-box').style.display = 'block';
-    document.getElementById('reg-otp-btn').innerText = 'Resend OTP';
-    alert('OTP Sent! Enter 2026 to verify.');
-    
-    // Bind instant verification listener
-    document.getElementById('reg-otp-input').addEventListener('input', (e) => {
-      if (e.target.value === '2026') {
-        isAuthPhoneVerified = true;
-        document.getElementById('reg-otp-status').innerText = '✓ Phone verified successfully!';
-        document.getElementById('reg-otp-status').style.color = '#1f7a3f';
-        document.getElementById('reg-otp-input').disabled = true;
-        document.getElementById('reg-otp-btn').innerText = 'Verified ✓';
-        document.getElementById('reg-otp-btn').disabled = true;
-      }
-    });
-  }, 1000);
-}
-
 // Submit Register API Call
 function submitRegister(e) {
   e.preventDefault();
@@ -346,12 +312,8 @@ function submitRegister(e) {
     alert('Passwords do not match!');
     return;
   }
-  if (!isAuthPhoneVerified) {
-    alert('Please verify your mobile number with OTP code 2026!');
-    return;
-  }
 
-  fetch('/api/auth/register', {
+  fetch(window.API_BASE + '/api/auth/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, phone, password })
@@ -377,7 +339,7 @@ function submitLogin(e) {
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
 
-  fetch('/api/auth/login', {
+  fetch(window.API_BASE + '/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password })
@@ -567,7 +529,7 @@ function submitEmergencyGrievance(audioBlob) {
   formData.append('longitude', emergencyGPSCoords.lng || '80.4365');
   formData.append('audio', audioBlob, 'emergency.wav');
 
-  fetch('/api/complaints', {
+  fetch(window.API_BASE + '/api/complaints', {
     method: 'POST',
     body: formData
   })

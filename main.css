@@ -29,37 +29,11 @@ body {
   align-items: center;
   gap: 14px;
 }
-.flag {
-  width: 26px;
-  height: 17px;
-  border-radius: 2px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid #ddd;
-}
-.flag span {
-  flex: 1;
-}
-.flag .s {
-  background: #ff9933;
-}
-.flag .w {
-  background: #fff;
-  position: relative;
-}
-.flag .w::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  width: 5px;
-  height: 5px;
-  border: 1px solid #000080;
-  border-radius: 50%;
-}
-.flag .g {
-  background: #138808;
+.gov-flag {
+  height: 20px;
+  width: auto;
+  object-fit: contain;
+  vertical-align: middle;
 }
 .gov-left b {
   font-weight: 600;
@@ -2470,5 +2444,57 @@ body.high-contrast .timeline-dot {
   100% { transform: scale(1); opacity: 1; }
 }
 
+.ai-gen-btn {
+  background: #eef6f0;
+  color: #1f7a3f;
+  border: 1px solid #1f7a3f;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
 
+.ai-gen-btn:hover {
+  background: #1f7a3f;
+  color: #ffffff !important;
+}
 
+/* Premium Subcategory Buttons */
+.subcategory-btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  outline: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.subcategory-btn:hover {
+  color: #1f7a3f;
+  background: #f0fdf4;
+  border-color: #1f7a3f;
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 6px -1px rgba(31, 122, 63, 0.1), 0 2px 4px -1px rgba(31, 122, 63, 0.06);
+}
+
+.subcategory-btn:active {
+  transform: translateY(1px);
+}
+
+.subcategory-btn.active {
+  color: #ffffff;
+  background: #1f7a3f;
+  border-color: #1f7a3f;
+  box-shadow: 0 4px 10px rgba(31, 122, 63, 0.25);
+  transform: none;
+}

@@ -12,9 +12,7 @@
     <!-- TOP GOVERNMENT STRIP -->
     <div class="gov-strip" id="main">
       <div class="gov-left">
-        <span class="flag"
-          ><span class="s"></span><span class="w"></span><span class="g"></span
-        ></span>
+        <img src="indian-flag.png" class="gov-flag" alt="Flag of India" />
         <b data-translate="gov_title">Government of India</b>
         <span class="divider">|</span>
         <span>One Nation</span>
@@ -108,13 +106,24 @@
               </div>
 
               <div class="form-group">
-                <label for="subcategory-text" data-translate="label_subcategory">Specify Subcategory <span class="required">*</span></label>
-                <input type="text" id="subcategory-text" class="form-control" placeholder="Specify subcategory details (e.g. Water logging, delayed mid-day meal)" required />
+                <label data-translate="label_subcategory">Select Subcategory <span class="required">*</span></label>
+                <div id="subcategory-buttons-container" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:8px;">
+                  <!-- Loaded dynamically based on Category selection -->
+                </div>
+                <input type="hidden" id="subcategory-text" required />
+                <!-- Hidden custom subcategory field for 'Others' -->
+                <div id="custom-subcategory-wrapper" style="display:none; margin-top:12px;">
+                  <label for="custom-subcategory-text" style="font-size:13px; font-weight:600; color:#475569;">Specify the Problem Details <span class="required">*</span></label>
+                  <input type="text" id="custom-subcategory-text" class="form-control" placeholder="Describe the specific problem here..." />
+                </div>
               </div>
 
               <div class="form-row">
-                <div class="form-group">
-                  <label for="grievance-title" data-translate="label_short_title">Short Title of Grievance <span class="required">*</span></label>
+                <div class="form-group" style="position:relative;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label for="grievance-title" data-translate="label_short_title">Short Title of Grievance <span class="required">*</span></label>
+                    <button type="button" class="ai-gen-btn" onclick="generateAITitleAndDescription()" style="background:#eef6f0; color:#1f7a3f; border:1px solid #1f7a3f; border-radius:6px; padding:4px 8px; font-size:11px; font-weight:700; cursor:pointer;">✨ AI Auto-Generate</button>
+                  </div>
                   <input type="text" id="grievance-title" class="form-control" placeholder="e.g. Broken drainage pipe on road 3" required />
                 </div>
                 <div class="form-group">
@@ -145,37 +154,39 @@
             <!-- STEP 2: Location & Uploads -->
             <div class="form-step-content" id="step-content-2">
               
-              <!-- Location Choices (Optional) -->
+              <!-- Simple Location Selector (Map Removed) -->
               <div class="form-group">
-                <label>Grievance Location (Optional)</label>
-                <div class="map-selector-box">
-                  <div class="map-tabs">
-                    <button type="button" class="map-tab-btn active" id="tab-live-btn" onclick="selectMapTab('live')">Option 1: Live Geolocation GPS</button>
-                    <button type="button" class="map-tab-btn" id="tab-manual-btn" onclick="selectMapTab('manual')">Option 2: Search &amp; Manual Pin</button>
+                <label style="font-weight:700;">Grievance Location (Optional)</label>
+                <div class="location-simple-box" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:12px; padding:16px; margin-top:8px;">
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;">
+                    <button type="button" class="action-addon-btn" id="detect-gps-btn" onclick="fetchLiveGPS()" style="background:#1f7a3f; color:#fff; border:none; padding:10px 16px; border-radius:8px; display:flex; align-items:center; gap:8px;">📍 Use Live Location</button>
+                    <span class="upload-hint" id="gps-status" style="font-weight:700; color:#475569; margin:0;">No coordinates pinned yet.</span>
                   </div>
-                  <!-- Map Address Search Row -->
-                  <div class="map-search-row" id="map-search-row-box" style="display:none; padding:10px 14px 0;">
-                    <input type="text" id="map-search-input" class="form-control map-search-input" placeholder="Search address or area name..." onkeydown="if(event.key === 'Enter') searchMapAddress()" />
-                    <button type="button" class="action-addon-btn" onclick="searchMapAddress()">Search</button>
-                  </div>
-                  <div class="map-body-wrapper" id="leaflet-map-container"></div>
+                  <input type="hidden" id="latitude-val" />
+                  <input type="hidden" id="longitude-val" />
+                  
+                  <label for="location-address-input" style="font-size:13px; font-weight:600; color:#475569; display:block; margin-bottom:6px;">Where did the problem happen? (Type landmark or area name)</label>
+                  <textarea id="location-address-input" class="form-control" rows="2" placeholder="Enter landmark, street name, area name or city..."></textarea>
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-                  <span class="upload-hint" id="gps-status" style="font-weight:700;">No coordinates pinned yet.</span>
-                  <button type="button" class="action-addon-btn" id="detect-gps-btn" onclick="fetchLiveGPS()">📍 Fetch Live Location</button>
-                </div>
-                <input type="hidden" id="latitude-val" />
-                <input type="hidden" id="longitude-val" />
               </div>
 
               <!-- Media Capture & upload (Optional) -->
               <div class="form-group">
                 <label data-translate="label_uploads">Attach Supporting Documents/Images (Optional)</label>
                 
-                <!-- Browser Direct Camera Access -->
-                <div style="display:flex; gap:10px; margin-bottom:12px;">
-                  <button type="button" class="action-addon-btn" style="flex:1; justify-content:center;" onclick="openBrowserCamera()">📸 Capture Photo</button>
-                  <button type="button" class="action-addon-btn" style="flex:1; justify-content:center;" id="btn-audio-rec" onclick="toggleAudioRecording()">🎙️ Record Audio</button>
+                <!-- Camera and Voice Quick Submit controls -->
+                <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:12px;">
+                  <div style="display:flex; gap:10px;">
+                    <button type="button" class="action-addon-btn" style="flex:1; justify-content:center;" onclick="openBrowserCamera()">📸 Capture Photo</button>
+                  </div>
+                  <div style="display:flex; gap:10px;">
+                    <button type="button" class="action-addon-btn" id="btn-voice-normal" onclick="toggleQuickVoice(false)" style="flex:1; justify-content:center; background:#2563eb; color:#fff; font-weight:600; display:flex; align-items:center; gap:8px; border:none; border-radius:8px; padding:12px;">🎙️ Start Voice Complaint</button>
+                    <button type="button" class="action-addon-btn" id="btn-voice-emergency" onclick="toggleQuickVoice(true)" style="flex:1; justify-content:center; background:#dc2626; color:#fff; font-weight:600; display:flex; align-items:center; gap:8px; border:none; border-radius:8px; padding:12px;">🚨 Start Emergency Voice Complaint</button>
+                  </div>
+                  <div id="quick-voice-status-box" style="display:none; text-align:center; padding:10px; background:#fef2f2; border:1px solid #fee2e2; border-radius:8px; font-weight:600; color:#b91c1c;">
+                    <span style="display:inline-block; width:10px; height:10px; background:#ef4444; border-radius:50%; margin-right:8px; animation: pulse-record 1s infinite;"></span>
+                    Recording Active: Click the red stop button again to end and automatically register complaint!
+                  </div>
                 </div>
 
                 <!-- Hidden video preview container for live capture -->
@@ -260,7 +271,7 @@
           </div>
         </div>
       </div>
-    </main>
+</main>
 
     <!-- Leaflet JS Map -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -270,9 +281,6 @@
     <script>
       let currentStep = 1;
       let selectedSeverity = 'Medium';
-      let map = null;
-      let marker = null;
-      let activeMapTab = 'live';
       let cameraStream = null;
       let audioRecorder = null;
       let audioChunks = [];
@@ -283,6 +291,127 @@
       let attachedAudioBlob = null;
       let manualFiles = [];
 
+      const subcategoriesData = {
+        food: ["Ration Shop Delay", "Food Quality Issue", "Drinking Water Supply", "Mid-day Meal Delay", "Welfare Scheme Issue"],
+        civic: ["Road Pothole", "Drainage Leakage", "Garbage Accumulation", "Streetlight Malfunction", "Traffic Congestion"],
+        education: ["School Infrastructure", "Scholarship Delay", "Hostel Facilities", "Teacher Shortage", "Fee Issue"],
+        health: ["Doctor Absence", "Medicine Shortage", "Sanitation Issue", "Ambulance Delay", "Hospital Hygiene"],
+        other: ["Police Inaction", "Telecommunications", "Transport Issues", "General Inquiry", "Other Grievance"]
+      };
+
+      const mockAIPredictions = {
+        food: {
+          "Ration Shop Delay": {
+            title: "Delay in Ration Card Distribution & Monthly Grain Supply",
+            desc: "I am raising this complaint to report that the local fair price shop has not distributed the monthly rations for the last 15 days, causing severe hardship to all cardholders in our locality."
+          },
+          "Food Quality Issue": {
+            title: "Substandard Quality of Grains Distributed at Public Depot",
+            desc: "The quality of wheat and rice distributed at the fair price shop is extremely poor and contains sand particles and insects. It is unfit for human consumption."
+          },
+          "Drinking Water Supply": {
+            title: "Irregular and Contaminated Municipal Drinking Water Supply",
+            desc: "Drinking water is supplied only once a week, and it comes out muddy with a foul smell. Requesting urgent cleaning of the local reservoir."
+          },
+          "Mid-day Meal Delay": {
+            title: "Disruption in Mid-day Meal Scheme in Local School",
+            desc: "The mid-day meal scheme has been non-functional for the past week in the local municipal school due to raw material shortages. Children are not receiving their lunch."
+          },
+          "Welfare Scheme Issue": {
+            title: "Delay in Disbursement of Public Welfare Pension Benefits",
+            desc: "The monthly welfare pension scheme amount has not been credited to the beneficiaries' bank accounts for three consecutive months. Urgent verification needed."
+          }
+        },
+        civic: {
+          "Road Pothole": {
+            title: "Major Potholes on Main Crossing Causing Frequent Accidents",
+            desc: "The main road is filled with huge potholes that fill up during rains, causing traffic blocks and minor motor accidents every day. Needs immediate resurfacing."
+          },
+          "Drainage Leakage": {
+            title: "Overflown Sewage Lines Causing Dirty Water Accumulation",
+            desc: "The sewage line has blocked and dirty black water is leaking out onto the footpath, causing a terrible odor and creating health hazards for residents."
+          },
+          "Garbage Accumulation": {
+            title: "Unattended Garbage Dump Piling Up in Residential Street",
+            desc: "The municipal garbage truck has not cleared the garbage bin at this corner for over 10 days. The waste is overflowing and spreading onto the street."
+          },
+          "Streetlight Malfunction": {
+            title: "Non-functional Streetlights Creating Dark Safety Hazards",
+            desc: "All streetlights from building 4 to building 10 have been out of order for the last two weeks, making it extremely unsafe for women and children at night."
+          },
+          "Traffic Congestion": {
+            title: "Chaotic Traffic Congestion and Lack of Signals at Crossroad",
+            desc: "Traffic jams are lasting for hours at the main junction due to broken signals and lack of traffic police monitoring during peak office hours."
+          }
+        },
+        education: {
+          "School Infrastructure": {
+            title: "Dilapidated Classroom Roofs and Lack of Benches in Govt School",
+            desc: "The classroom roofs are leaking water during rains, and pupils have to sit on the floor due to broken benches. Urgent repairs required."
+          },
+          "Scholarship Delay": {
+            title: "Unreasonable Delay in Granting Annual Scholarship Funds",
+            desc: "The state higher education scholarship funds have not been disbursed for the current academic session, causing financial distress to eligible candidates."
+          },
+          "Hostel Facilities": {
+            title: "Unhygienic Toilets and Lack of Proper Food in Govt Hostel",
+            desc: "The boy's/girl's hostel is in a state of neglect with unusable toilets and poorly cooked, unhygienic meals served in the mess."
+          },
+          "Teacher Shortage": {
+            title: "Severe Shortage of Teaching Staff in Primary Classes",
+            desc: "There are only 2 teachers available for 5 primary classes in the school. The curriculum is severely lagging due to staffing shortages."
+          },
+          "Fee Issue": {
+            title: "Arbitrary Fee Increase by Private Management Against Norms",
+            desc: "The local school administration has suddenly increased the tuition fee by 30% without proper authorization, which is a direct violation of state regulations."
+          }
+        },
+        health: {
+          "Doctor Absence": {
+            title: "Lack of Attending Doctors at Primary Health Center Clinic",
+            desc: "Patients are waiting in long queues since morning, but no medical officers or attending doctors have arrived at the local health clinic."
+          },
+          "Medicine Shortage": {
+            title: "Shortage of Essential Lifesaving Medicines at Health Depot",
+            desc: "Patients are forced to buy basic medicines from private pharmacies because the government health center has been out of stock for weeks."
+          },
+          "Sanitation Issue": {
+            title: "Unhygienic Conditions and Garbage Dumps in Local Clinic Area",
+            desc: "Medical waste and plastic wrap are dumped in open areas behind the clinic ward, posing a high risk of hospital-acquired infections."
+          },
+          "Ambulance Delay": {
+            title: "Delayed Ambulance Emergency Response Services",
+            desc: "The emergency ambulance services took more than an hour to respond to a critical heart attack call in the block, highlighting severe neglect."
+          },
+          "Hospital Hygiene": {
+            title: "Extremely Dirty Beds and Inadequate Cleaning in General Ward",
+            desc: "The hospital beds are not changed, and dust/grime has accumulated in the wards. Sweepers are not clearing waste bins regularly."
+          }
+        },
+        other: {
+          "Police Inaction": {
+            title: "Delay in Registering Police Report (FIR) for Wallet Theft",
+            desc: "The local police desk has refused to register an FIR for my stolen wallet and mobile, asking me to wait indefinitely without reason."
+          },
+          "Telecommunications": {
+            title: "Frequent Telecom Network Outages and Poor Connectivity",
+            desc: "The mobile phone network towers are frequently down in our village block, causing severe disruptions to daily communication and online studies."
+          },
+          "Transport Issues": {
+            title: "Irregular State Bus Service timings on Route 45B",
+            desc: "The scheduled state buses are frequently skipping their runs, leaving daily commuters and students stranded for hours on the main stops."
+          },
+          "General Inquiry": {
+            title: "General Grievance: Delay in Processing Citizen Certificates",
+            desc: "My application for local resident certificate has been stuck in 'pending' status for more than 45 days at the municipal office."
+          },
+          "Other Grievance": {
+            title: "General Grievance Query",
+            desc: "I am submitting this grievance to request assistance on a custom issue that needs review and escalation."
+          }
+        }
+      };
+
       window.onload = function() {
         const hash = window.location.hash.substring(1);
         const select = document.getElementById('grievance-category');
@@ -292,7 +421,6 @@
         }
         onCategoryChange();
         updateStepperUI();
-        initLeafletMap();
       };
 
       // Select Category change trigger
@@ -309,6 +437,98 @@
           otherText.required = false;
           otherText.value = '';
         }
+        
+        renderSubcategoryButtons();
+      }
+
+      function renderSubcategoryButtons() {
+        const category = document.getElementById('grievance-category').value;
+        const container = document.getElementById('subcategory-buttons-container');
+        const hiddenInput = document.getElementById('subcategory-text');
+        const customWrapper = document.getElementById('custom-subcategory-wrapper');
+        const customInput = document.getElementById('custom-subcategory-text');
+        
+        container.innerHTML = '';
+        hiddenInput.value = ''; // Reset selection
+        customWrapper.style.display = 'none';
+        customInput.required = false;
+        customInput.value = '';
+        
+        const list = subcategoriesData[category] || subcategoriesData['other'];
+        list.forEach(sub => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'subcategory-btn';
+          btn.innerText = sub;
+          btn.onclick = () => {
+            container.querySelectorAll('.subcategory-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            hiddenInput.value = sub;
+            customWrapper.style.display = 'none';
+            customInput.required = false;
+          };
+          container.appendChild(btn);
+        });
+
+        // Add "Others" subcategory button
+        const otherBtn = document.createElement('button');
+        otherBtn.type = 'button';
+        otherBtn.className = 'subcategory-btn';
+        otherBtn.innerText = 'Others';
+        otherBtn.onclick = () => {
+          container.querySelectorAll('.subcategory-btn').forEach(b => b.classList.remove('active'));
+          otherBtn.classList.add('active');
+          hiddenInput.value = 'Others';
+          customWrapper.style.display = 'block';
+          customInput.required = true;
+          customInput.focus();
+        };
+        container.appendChild(otherBtn);
+      }
+
+      function generateAITitleAndDescription() {
+        const category = document.getElementById('grievance-category').value;
+        const subcategory = document.getElementById('subcategory-text').value;
+        
+        if (!subcategory) {
+          alert("Please select a Subcategory button first so the AI has context!");
+          return;
+        }
+        
+        let titleText = "";
+        let descText = "";
+        
+        if (subcategory === 'Others') {
+          const customSubText = document.getElementById('custom-subcategory-text').value.trim();
+          if (!customSubText) {
+            alert("Please type a brief detail in the Specify the Problem box so the AI can build a description!");
+            return;
+          }
+          titleText = `${customSubText} Grievance`;
+          descText = `This complaint is raised to report: ${customSubText}. Requesting immediate inspection, action, and resolution by the concerned department.`;
+        } else {
+          const data = mockAIPredictions[category] && mockAIPredictions[category][subcategory];
+          if (data) {
+            titleText = data.title;
+            descText = data.desc;
+          } else {
+            titleText = `${subcategory} Grievance`;
+            descText = `I am facing an issue regarding ${subcategory}. Please look into this matter and resolve it at the earliest.`;
+          }
+        }
+        
+        document.getElementById('grievance-title').value = titleText;
+        document.getElementById('grievance-desc').value = descText;
+        document.getElementById('char-counter').innerText = `${descText.length} / 2000 chars`;
+        
+        const tField = document.getElementById('grievance-title');
+        const dField = document.getElementById('grievance-desc');
+        tField.style.borderColor = '#1f7a3f';
+        dField.style.borderColor = '#1f7a3f';
+        setTimeout(() => {
+          tField.style.borderColor = '';
+          dField.style.borderColor = '';
+        }, 1000);
       }
 
       function selectSeverity(level, btn) {
@@ -356,8 +576,15 @@
             return false;
           }
           if (!sub.trim()) {
-            alert('Please specify the subcategory detail!');
+            alert('Please select a subcategory button!');
             return false;
+          }
+          if (sub === 'Others') {
+            const customSub = document.getElementById('custom-subcategory-text').value;
+            if (!customSub.trim()) {
+              alert('Please specify your custom problem detail in the text box!');
+              return false;
+            }
           }
           if (!title.trim()) {
             alert('Please enter a title for your grievance!');
@@ -391,91 +618,18 @@
         window.scrollTo(0, 0);
       }
 
-      // ==========================================================================
-      // LEAFLET MAP & GPS GEOLOCATION LOGIC
-      // ==========================================================================
-      function initLeafletMap() {
-        // Initialize map centered at India Guntur coords (16.3067, 80.4365)
-        map = L.map('leaflet-map-container').setView([16.3067, 80.4365], 13);
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
-          attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        marker = L.marker([16.3067, 80.4365], { draggable: true }).addTo(map);
-        
-        marker.on('dragend', () => {
-          const pos = marker.getLatLng();
-          updatePinnedCoordinates(pos.lat, pos.lng);
-        });
-
-        map.on('click', (e) => {
-          if (activeMapTab === 'manual') {
-            marker.setLatLng(e.latlng);
-            updatePinnedCoordinates(e.latlng.lat, e.latlng.lng);
-          }
-        });
-      }
-
-      function selectMapTab(tab) {
-        activeMapTab = tab;
-        document.getElementById('tab-live-btn').className = tab === 'live' ? 'map-tab-btn active' : 'map-tab-btn';
-        document.getElementById('tab-manual-btn').className = tab === 'manual' ? 'map-tab-btn active' : 'map-tab-btn';
-        
-        const searchBox = document.getElementById('map-search-row-box');
-        if (tab === 'manual') {
-          if (searchBox) searchBox.style.display = 'flex';
-        } else {
-          if (searchBox) searchBox.style.display = 'none';
-          fetchLiveGPS();
-        }
-      }
-
-      function searchMapAddress() {
-        const query = document.getElementById('map-search-input').value.trim();
-        if (!query) {
-          alert('Please enter an address or landmark to search!');
-          return;
-        }
-
-        const statusText = document.getElementById('gps-status');
-        statusText.innerText = 'Searching address...';
-        statusText.style.color = '#ef4444';
-
-        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
-          .then(res => res.json())
-          .then(data => {
-            if (data && data.length > 0) {
-              const lat = parseFloat(data[0].lat);
-              const lng = parseFloat(data[0].lon);
-              const displayName = data[0].display_name;
-
-              map.setView([lat, lng], 15);
-              marker.setLatLng([lat, lng]);
-              updatePinnedCoordinates(lat, lng);
-              statusText.innerText = `✓ Found: ${displayName.substring(0, 60)}...`;
-              statusText.style.color = '#1f7a3f';
-            } else {
-              alert('No location found for this search query. Please try another place name.');
-              statusText.innerText = 'Address search failed.';
-            }
-          })
-          .catch(err => {
-            console.error(err);
-            alert('Error connecting to map search service. Try clicking manually on the map.');
-            statusText.innerText = 'Map search error.';
-          });
-      }
-
+      // GPS Lookup with Reverse Geocoding
       function fetchLiveGPS() {
         const statusText = document.getElementById('gps-status');
         const detectBtn = document.getElementById('detect-gps-btn');
+        const addressBox = document.getElementById('location-address-input');
+        
         detectBtn.innerText = 'Locating...';
+        statusText.innerText = 'Fetching coordinates...';
         
         if (!navigator.geolocation) {
           statusText.innerText = 'GPS is not supported by your browser.';
-          detectBtn.innerText = '📍 Fetch Live Location';
+          detectBtn.innerText = '📍 Use Live Location';
           return;
         }
 
@@ -483,31 +637,40 @@
           (pos) => {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
-            map.setView([lat, lng], 16);
-            marker.setLatLng([lat, lng]);
-            updatePinnedCoordinates(lat, lng);
-            detectBtn.innerText = '📍 Fetch Live Location';
+            
+            document.getElementById('latitude-val').value = lat;
+            document.getElementById('longitude-val').value = lng;
+            statusText.innerText = `Coordinates Pinned: ${lat.toFixed(5)}° N, ${lng.toFixed(5)}° E`;
+            statusText.style.color = '#1f7a3f';
+            detectBtn.innerText = '📍 Re-detect Location';
+            
+            addressBox.value = 'Locating address...';
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+              .then(res => res.json())
+              .then(data => {
+                if (data && data.display_name) {
+                  addressBox.value = data.display_name;
+                } else {
+                  addressBox.value = `Guntur region, Latitude: ${lat.toFixed(4)}, Longitude: ${lng.toFixed(4)}`;
+                }
+              })
+              .catch(err => {
+                addressBox.value = `Guntur region, Latitude: ${lat.toFixed(4)}, Longitude: ${lng.toFixed(4)}`;
+              });
           },
           (err) => {
-            // Fallback mock coordinates if user denies GPS permission
+            console.warn('Geolocation failed:', err);
             const lat = 16.3067 + (Math.random() - 0.5) * 0.02;
             const lng = 80.4365 + (Math.random() - 0.5) * 0.02;
-            map.setView([lat, lng], 15);
-            marker.setLatLng([lat, lng]);
-            updatePinnedCoordinates(lat, lng);
-            statusText.innerText = `GPS Permission Denied. Simulation coordinates used.`;
+            document.getElementById('latitude-val').value = lat;
+            document.getElementById('longitude-val').value = lng;
+            statusText.innerText = `GPS simulated: ${lat.toFixed(5)}° N, ${lng.toFixed(5)}° E`;
             statusText.style.color = '#dc2626';
-            detectBtn.innerText = '📍 Fetch Live Location';
+            detectBtn.innerText = '📍 Use Live Location';
+            addressBox.value = 'Simulated Municipal Office, Guntur';
           },
-          { enableHighAccuracy: true, timeout: 5000 }
+          { enableHighAccuracy: true, timeout: 6000 }
         );
-      }
-
-      function updatePinnedCoordinates(lat, lng) {
-        document.getElementById('latitude-val').value = lat;
-        document.getElementById('longitude-val').value = lng;
-        document.getElementById('gps-status').innerText = `✓ Coordinates Pinned: ${lat.toFixed(5)}° N, ${lng.toFixed(5)}° E`;
-        document.getElementById('gps-status').style.color = '#1f7a3f';
       }
 
       // ==========================================================================
@@ -542,16 +705,12 @@
         const canvas = document.getElementById('camera-canvas');
         const ctx = canvas.getContext('2d');
 
-        // Draw current video frame onto canvas
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
         canvas.toBlob(blob => {
           attachedPhotoBlob = blob;
-          
-          // Display in file preview area
           const container = document.getElementById('preview-container');
           
-          // Remove old snaps
           const old = container.querySelector('.file-preview[data-snap="true"]');
           if (old) old.remove();
 
@@ -564,24 +723,30 @@
             <button type="button" class="file-remove-btn" onclick="attachedPhotoBlob=null; this.parentElement.remove()">×</button>
           `;
           container.appendChild(preview);
-          
           closeBrowserCamera();
         }, 'image/png');
       }
 
-      // Audio recording logic
-      function toggleAudioRecording() {
-        const btn = document.getElementById('btn-audio-rec');
+      // Voice & Emergency Voice quick recording and submit logic
+      function toggleQuickVoice(isEmergency) {
+        const btnId = isEmergency ? 'btn-voice-emergency' : 'btn-voice-normal';
+        const otherBtnId = isEmergency ? 'btn-voice-normal' : 'btn-voice-emergency';
+        const btn = document.getElementById(btnId);
+        const otherBtn = document.getElementById(otherBtnId);
+        const statusBox = document.getElementById('quick-voice-status-box');
         
         if (isAudioRecording) {
-          // Stop recording
           audioRecorder.stop();
-          btn.innerText = '🎙️ Record Audio';
-          btn.style.backgroundColor = '';
-          btn.style.color = '';
+          
+          document.getElementById('btn-voice-normal').innerText = '🎙️ Start Voice Complaint';
+          document.getElementById('btn-voice-normal').style.backgroundColor = '#2563eb';
+          document.getElementById('btn-voice-emergency').innerText = '🚨 Start Emergency Voice Complaint';
+          document.getElementById('btn-voice-emergency').style.backgroundColor = '#dc2626';
+          otherBtn.disabled = false;
+          statusBox.style.display = 'none';
+          
           isAudioRecording = false;
         } else {
-          // Start recording
           navigator.mediaDevices.getUserMedia({ audio: true })
             .then(stream => {
               audioRecorder = new MediaRecorder(stream);
@@ -593,30 +758,21 @@
 
               audioRecorder.onstop = () => {
                 attachedAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                
-                const container = document.getElementById('preview-container');
-                const old = container.querySelector('.file-preview[data-audio="true"]');
-                if (old) old.remove();
-
-                const preview = document.createElement('div');
-                preview.className = 'file-preview';
-                preview.dataset.audio = 'true';
-                preview.innerHTML = `
-                  <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 24px; background: #e2e8f0; color: #475569;">🎙️</div>
-                  <div class="file-preview-name">VoiceNote.wav</div>
-                  <button type="button" class="file-remove-btn" onclick="attachedAudioBlob=null; this.parentElement.remove()">×</button>
-                `;
-                container.appendChild(preview);
-
-                // Stop tracks to release mic
                 stream.getTracks().forEach(t => t.stop());
+                
+                // Immediately submit
+                submitVoiceComplaintAPI(isEmergency);
               };
 
               audioRecorder.start();
-              btn.innerText = '⏹️ Stop Recording';
-              btn.style.backgroundColor = '#dc2626';
-              btn.style.color = '#fff';
               isAudioRecording = true;
+              
+              btn.innerText = `⏹️ Stop & Submit ${isEmergency ? 'Emergency' : 'Voice'}`;
+              btn.style.backgroundColor = '#4b5563'; 
+              otherBtn.disabled = true;
+              
+              statusBox.style.display = 'block';
+              statusBox.innerText = `Recording active: Click the STOP button above to finish and automatically submit ${isEmergency ? 'Emergency' : 'Voice'} complaint!`;
             })
             .catch(err => {
               alert('Microphone access denied or not available.');
@@ -624,9 +780,80 @@
         }
       }
 
-      // Classic manual uploads preview
-      function handleFileSelect(e) {
-        const files = e.target.files;
+      function submitVoiceComplaintAPI(isEmergency) {
+        const category = isEmergency ? 'other' : (document.getElementById('grievance-category').value || 'other');
+        const subcategory = isEmergency ? 'Emergency Voice' : 'Voice Note';
+        const title = isEmergency ? '🚨 Emergency Voice Grievance' : '🎙️ Voice Note Grievance';
+        
+        let description = document.getElementById('grievance-desc').value.trim();
+        if (!description) {
+          description = isEmergency 
+            ? "Emergency Voice Complaint registered by citizen. Urgent attention required." 
+            : "Voice Complaint registered by citizen.";
+        }
+        
+        const severity = isEmergency ? 'High' : 'Medium';
+        const lat = document.getElementById('latitude-val').value || '16.3067';
+        const lng = document.getElementById('longitude-val').value || '80.4365';
+        const address = document.getElementById('location-address-input').value.trim() || 'Not specified';
+        const anonymous = document.getElementById('anonymous-check').checked;
+
+        const isAuth = !!localStorage.getItem('prajamitra_token');
+        const name = isAuth ? 'Registered Citizen' : 'Anonymous Reporter';
+        const phone = localStorage.getItem('prajamitra_user_phone') || '';
+        const email = localStorage.getItem('prajamitra_user_email') || '';
+
+        const formData = new FormData();
+        formData.append('category', category);
+        formData.append('subcategory', subcategory);
+        formData.append('title', title);
+        formData.append('description', `${description}\nLocation Detail: ${address}`);
+        formData.append('severity', severity);
+        formData.append('latitude', lat);
+        formData.append('longitude', lng);
+        formData.append('anonymous', anonymous ? 'true' : 'false');
+        formData.append('name', name);
+        formData.append('phone', phone);
+        formData.append('email', email);
+
+        if (attachedAudioBlob) {
+          formData.append('audio', attachedAudioBlob, 'voice_complaint.wav');
+        }
+        if (attachedPhotoBlob) {
+          formData.append('photo', attachedPhotoBlob, 'photo.png');
+        }
+
+        fetch((window.API_BASE || '') + '/api/complaints', {
+          method: 'POST',
+          body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            alert('Submission error: ' + data.error);
+          } else {
+            document.getElementById('form-container-box').style.display = 'none';
+            document.getElementById('receipt-container-box').style.display = 'block';
+
+            document.getElementById('receipt-ticket-id').innerText = data.id;
+            document.getElementById('receipt-date').innerText = data.date;
+            document.getElementById('receipt-title').innerText = data.title;
+            document.getElementById('receipt-dept').innerText = data.dept;
+            document.getElementById('receipt-eta').innerText = data.eta;
+            
+            document.getElementById('receipt-track-btn').onclick = () => {
+              location.href = `track.html?id=${data.id}`;
+            };
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          alert('Error connecting to backend server. Make sure the server is active!');
+        });
+      }
+
+      function handleFileSelect(event) {
+        const files = event.target.files;
         const container = document.getElementById('preview-container');
         
         for (let i = 0; i < files.length; i++) {
@@ -634,14 +861,14 @@
           manualFiles.push(file);
           
           const reader = new FileReader();
-          reader.onload = function(event) {
+          reader.onload = function(e) {
             const preview = document.createElement('div');
             preview.className = 'file-preview';
             preview.dataset.name = file.name;
             
             let mediaHtml = '';
             if (file.type.startsWith('image/')) {
-              mediaHtml = `<img src="${event.target.result}" alt="${file.name}">`;
+              mediaHtml = `<img src="${e.target.result}" alt="${file.name}">`;
             } else {
               mediaHtml = `<div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 24px; background: #e2e8f0; color: #475569;">📄</div>`;
             }
@@ -656,15 +883,7 @@
           if (file.type.startsWith('image/')) {
             reader.readAsDataURL(file);
           } else {
-            const preview = document.createElement('div');
-            preview.className = 'file-preview';
-            preview.dataset.name = file.name;
-            preview.innerHTML = `
-              <div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 24px; background: #e2e8f0; color: #475569;">📄</div>
-              <div class="file-preview-name">${file.name}</div>
-              <button type="button" class="file-remove-btn" onclick="removeManualFile('${file.name}', this)">×</button>
-            `;
-            container.appendChild(preview);
+             reader.readAsDataURL(new Blob([])); // Trigger dummy load for non-images
           }
         }
       }
@@ -674,13 +893,12 @@
         btn.parentElement.remove();
       }
 
-      // Character counter
       document.getElementById('grievance-desc').oninput = function() {
         document.getElementById('char-counter').innerText = this.value.length + ' / 2000 chars';
       };
 
       // ==========================================================================
-      // FORM SUBMIT API CALL TO server.js backend
+      // FORM SUBMIT API CALL TO backend
       // ==========================================================================
       function submitComplaintAPI() {
         const nextBtn = document.getElementById('btn-next');
@@ -689,24 +907,29 @@
 
         const category = document.getElementById('grievance-category').value;
         const otherCategoryText = document.getElementById('other-category-text').value;
+        
         const subcategory = document.getElementById('subcategory-text').value;
+        const customSubcategory = document.getElementById('custom-subcategory-text').value;
+        const subValue = subcategory === 'Others' ? customSubcategory : subcategory;
+        
         const title = document.getElementById('grievance-title').value;
-        const description = document.getElementById('grievance-desc').value;
+        const baseDesc = document.getElementById('grievance-desc').value;
+        const address = document.getElementById('location-address-input').value.trim();
+        const description = address ? `${baseDesc}\n\nLocation Detail: ${address}` : baseDesc;
+        
         const severity = selectedSeverity;
-        const lat = document.getElementById('latitude-val').value;
-        const lng = document.getElementById('longitude-val').value;
+        const lat = document.getElementById('latitude-val').value || '16.3067';
+        const lng = document.getElementById('longitude-val').value || '80.4365';
         const anonymous = document.getElementById('anonymous-check').checked;
 
-        // Gather email/phone from local storage if logged in, otherwise mock
         const isAuth = !!localStorage.getItem('prajamitra_token');
         const name = isAuth ? 'Registered Citizen' : 'Anonymous Reporter';
         const phone = localStorage.getItem('prajamitra_user_phone') || '';
         const email = localStorage.getItem('prajamitra_user_email') || '';
 
-        // Build Multi-part Form Data
         const formData = new FormData();
         formData.append('category', category === 'other' ? otherCategoryText : category);
-        formData.append('subcategory', subcategory);
+        formData.append('subcategory', subValue);
         formData.append('title', title);
         formData.append('description', description);
         formData.append('severity', severity);
@@ -717,7 +940,6 @@
         formData.append('phone', phone);
         formData.append('email', email);
 
-        // Append recorded blobs
         if (attachedPhotoBlob) {
           formData.append('photo', attachedPhotoBlob, 'photo.png');
         }
@@ -725,7 +947,6 @@
           formData.append('audio', attachedAudioBlob, 'audio.wav');
         }
 
-        // Append manual files uploads if any (first photo/video if available)
         manualFiles.forEach(file => {
           if (file.type.startsWith('image/')) {
             formData.append('photo', file);
@@ -736,8 +957,7 @@
           }
         });
 
-        // Submit fetch request to express backend server
-        fetch('/api/complaints', {
+        fetch((window.API_BASE || '') + '/api/complaints', {
           method: 'POST',
           body: formData
         })
@@ -748,14 +968,12 @@
             nextBtn.innerText = 'Submit Complaint ✓';
             nextBtn.disabled = false;
           } else {
-            // Show success receipt
             document.getElementById('form-container-box').style.display = 'none';
             document.getElementById('receipt-container-box').style.display = 'block';
 
-            // Populate receipt details
             document.getElementById('receipt-ticket-id').innerText = data.id;
             document.getElementById('receipt-date').innerText = data.date;
-            document.getElementById('receipt-title').innerText = data.title;
+            document.getElementById('receipt-title').innerText = title;
             document.getElementById('receipt-dept').innerText = data.dept;
             document.getElementById('receipt-eta').innerText = data.eta;
             
@@ -766,7 +984,7 @@
         })
         .catch(err => {
           console.error(err);
-          alert('Error connecting to backend server. Make sure the Node server is active!');
+          alert('Error connecting to backend server. Make sure the server is active!');
           nextBtn.innerText = 'Submit Complaint ✓';
           nextBtn.disabled = false;
         });
