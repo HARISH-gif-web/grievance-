@@ -32,19 +32,30 @@ if not os.path.exists(UPLOADS_DIR):
 
 # In-memory sessions store (Token -> User Email)
 ACTIVE_SESSIONS = {}
+AUTHORITY_ROLES = {}
 
 # Database helper functions
 def read_db():
     if not os.path.exists(DB_FILE):
-        init_data = {"users": [], "complaints": []}
+        init_data = {"users": [], "complaints": [], "departments": []}
         with open(DB_FILE, 'w', encoding='utf-8') as f:
             json.dump(init_data, f, indent=2)
         return init_data
     try:
         with open(DB_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
+            db = json.load(f)
+            if 'departments' not in db:
+                db['departments'] = [
+                    {"id": "DEP-1", "name": "Food Department", "type": "Food", "email": "food.dept@gov.in", "phone": "1800-111-222", "status": "Active"},
+                    {"id": "DEP-2", "name": "Civic Infrastructure", "type": "Civic", "email": "civic.dept@gov.in", "phone": "1800-333-444", "status": "Active"},
+                    {"id": "DEP-3", "name": "Education Department", "type": "Education", "email": "edu.dept@gov.in", "phone": "1800-555-666", "status": "Active"},
+                    {"id": "DEP-4", "name": "Health Department", "type": "Health", "email": "health.dept@gov.in", "phone": "1800-777-888", "status": "Active"}
+                ]
+                with open(DB_FILE, 'w', encoding='utf-8') as fw:
+                    json.dump(db, fw, indent=2)
+            return db
     except Exception:
-        return {"users": [], "complaints": []}
+        return {"users": [], "complaints": [], "departments": []}
 
 def write_db(data):
     with open(DB_FILE, 'w', encoding='utf-8') as f:
@@ -146,7 +157,7 @@ class PrajaMitraHandler(BaseHTTPRequestHandler):
             
         # User Grievance History
         elif path == '/api/complaints/user-history':
-            self.handle_user_history()
+            self.handle_user_history(query)
             return
 
         # Complaint Statistics
@@ -154,9 +165,29 @@ class PrajaMitraHandler(BaseHTTPRequestHandler):
             self.handle_stats()
             return
 
+        # Authority Dashboard Metrics
+        elif path == '/api/authority/metrics':
+          self.handle_authority_metrics()
+          return
+
+        # Authority Analytics Trend Data
+        elif path == '/api/authority/analytics':
+          self.handle_authority_analytics()
+          return
+
+        # Fetch Departments
+        elif path == '/api/departments':
+          self.handle_get_departments()
+          return
+
+        # Fetch Users
+        elif path == '/api/users':
+          self.handle_get_users()
+          return
+
         # 2. Static Files Server
         if path == '/' or path == '':
-            path = '/main.html'
+            path = '/index.html'
             
         file_path = os.path.join(os.path.dirname(__file__), path.lstrip('/'))
         
@@ -208,6 +239,46 @@ class PrajaMitraHandler(BaseHTTPRequestHandler):
         # E. AI Search Classification
         elif path == '/api/ai/classify-search':
             self.handle_ai_search_classify(body_bytes)
+
+        # F. Google Auth Login
+        elif path == '/api/auth/google':
+            self.handle_google_login(body_bytes)
+
+        # G. Update Complaint Status (Authority Action)
+        elif path == '/api/complaints/update-status':
+            self.handle_update_status(body_bytes)
+
+        # H. Authority Login with Passcode
+        elif path == '/api/auth/authority':
+            self.handle_authority_login(body_bytes)
+
+        # I. Create Department
+        elif path == '/api/departments':
+            self.handle_create_department(body_bytes)
+
+        # J. Delete Department
+        elif path == '/api/departments/delete':
+            self.handle_delete_department(body_bytes)
+
+        # K. Delete User
+        elif path == '/api/users/delete':
+            self.handle_delete_user(body_bytes)
+
+        # K2. Update User Role
+        elif path == '/api/users/update-role':
+            self.handle_update_user_role(body_bytes)
+
+        # K3. Update User Department
+        elif path == '/api/users/update-department':
+            self.handle_update_user_department(body_bytes)
+
+        # L. Update Passkeys
+        elif path == '/api/settings/update-passkey':
+            self.handle_update_passkey(body_bytes)
+
+        # M. Broadcast Notification
+        elif path == '/api/notifications/broadcast':
+            self.handle_broadcast_notification(body_bytes)
             
         else:
             self.send_error(404, 'API Endpoint Not Found')
@@ -692,19 +763,215 @@ class PrajaMitraHandler(BaseHTTPRequestHandler):
         else:
             self.send_json_response(200, found)
 
-    def handle_user_history(self):
+    def handle_user_history(self, query_params):
         user_email = self.get_auth_user()
         if not user_email:
             self.send_json_response(401, {"error": "Access token is missing or invalid"})
             return
             
         db = read_db()
+        email_lower = user_email.lower()
+        
+        # Check if user is logged in as an authority
+        is_authority = email_lower in AUTHORITY_ROLES
+        
         history = []
-        for c in db['complaints']:
-            if not c.get('anonymous') and c.get('reporter') and c['reporter'].get('email', '').lower() == user_email.lower():
-                history.append(c)
-                
+        if is_authority:
+            assigned_cat = AUTHORITY_ROLES[email_lower]
+            show_all = query_params.get('all', [''])[0].lower() == 'true'
+            for c in db['complaints']:
+                # Filter by assigned category or return all if all=true is passed
+                # Labeled filter also includes 'other' category complaints for authorities
+                if show_all or c.get('category') == assigned_cat or c.get('category') == 'other':
+                    history.append(c)
+        else:
+            for c in db['complaints']:
+                if not c.get('anonymous') and c.get('reporter') and c['reporter'].get('email', '').lower() == email_lower:
+                    history.append(c)
+                    
         self.send_json_response(200, history)
+
+    def handle_authority_login(self, body_bytes):
+        try:
+            req_data = json.loads(body_bytes.decode('utf-8'))
+        except Exception:
+            self.send_json_response(400, {"error": "Invalid JSON body"})
+            return
+            
+        email = req_data.get('email', '').strip().lower()
+        department = req_data.get('department', '').strip().lower()
+        passcode = req_data.get('passcode', '').strip()
+        
+        if not email or not department or not passcode:
+            self.send_json_response(400, {"error": "Email, Department, and Passcode are required"})
+            return
+            
+        db = read_db()
+        settings = db.get('settings', {})
+        passkeys = settings.get('passkeys', {
+            "food": "101",
+            "education": "102",
+            "civic": "103",
+            "health": "104",
+            "others": "100"
+        })
+
+        valid = False
+        assigned_cat = 'other'
+        if department == 'food' and passcode == passkeys.get('food', '101'):
+            valid = True
+            assigned_cat = 'food'
+        elif department == 'education' and passcode == passkeys.get('education', '102'):
+            valid = True
+            assigned_cat = 'education'
+        elif department == 'civic' and passcode == passkeys.get('civic', '103'):
+            valid = True
+            assigned_cat = 'civic'
+        elif department == 'health' and passcode == passkeys.get('health', '104'):
+            valid = True
+            assigned_cat = 'health'
+        elif department == 'others' and passcode == passkeys.get('others', '100'):
+            valid = True
+            assigned_cat = 'other'
+            
+        if not valid:
+            self.send_json_response(401, {"error": "Invalid Department Passkey match"})
+            return
+            
+        db = read_db()
+        user = None
+        for u in db['users']:
+            if u['email'].lower() == email:
+                user = u
+                break
+                
+        if not user:
+            user = {
+                "id": "USR-" + str(int(datetime.now().timestamp() * 1000)),
+                "email": email,
+                "phone": "",
+                "passwordHash": ""
+            }
+            db['users'].append(user)
+            write_db(db)
+            
+        token = uuid.uuid4().hex
+        ACTIVE_SESSIONS[token] = user['email']
+        AUTHORITY_ROLES[user['email'].lower()] = assigned_cat
+        
+        self.send_json_response(200, {
+            "token": token,
+            "email": user['email']
+        })
+
+    def handle_google_login(self, body_bytes):
+        try:
+            req_data = json.loads(body_bytes.decode('utf-8'))
+        except Exception:
+            self.send_json_response(400, {"error": "Invalid JSON body"})
+            return
+            
+        email = req_data.get('email', '').strip().lower()
+        if not email:
+            self.send_json_response(400, {"error": "Email is required"})
+            return
+            
+        db = read_db()
+        user = None
+        for u in db['users']:
+            if u['email'].lower() == email:
+                user = u
+                break
+                
+        if not user:
+            # Register new user dynamically
+            user = {
+                "id": "USR-" + str(int(datetime.now().timestamp() * 1000)),
+                "email": email,
+                "phone": "",
+                "passwordHash": ""
+            }
+            db['users'].append(user)
+            write_db(db)
+            
+        token = uuid.uuid4().hex
+        ACTIVE_SESSIONS[token] = user['email']
+        
+        self.send_json_response(200, {
+            "token": token,
+            "email": user['email']
+        })
+
+    def handle_update_status(self, body_bytes):
+        # Verify user is an authority
+        user_email = self.get_auth_user()
+        if not user_email or user_email.lower() not in AUTHORITY_ROLES:
+            self.send_json_response(403, {"error": "Only authority accounts can update complaint status"})
+            return
+            
+        try:
+            req_data = json.loads(body_bytes.decode('utf-8'))
+        except Exception:
+            self.send_json_response(400, {"error": "Invalid JSON body"})
+            return
+            
+        complaint_id = req_data.get('id')
+        new_status = req_data.get('status')
+        
+        if not complaint_id or not new_status:
+            self.send_json_response(400, {"error": "Complaint ID and status are required"})
+            return
+            
+        db = read_db()
+        found_idx = -1
+        for idx, c in enumerate(db['complaints']):
+            if c['id'].lower() == complaint_id.lower():
+                found_idx = idx
+                break
+                
+        if found_idx == -1:
+            self.send_json_response(404, {"error": "Complaint not found"})
+            return
+            
+        c = db['complaints'][found_idx]
+        
+        # Update main status text
+        c['status'] = new_status
+        
+        # Determine current date & time string
+        today = datetime.now()
+        date_str = today.strftime('%d %b %Y')
+        time_str = today.strftime('%I:%M %p')
+        today_str = f"{date_str} at {time_str}"
+        
+        # Update matching timeline items to completed
+        # Status mappings
+        # Submitted -> index 0
+        # Assigned -> index 1
+        # Under Investigation -> index 2
+        # Resolved -> index 3
+        # Ensure all steps up to the chosen status are marked completed!
+        if 'investigation' in new_status.lower():
+            target_step = 'Under Investigation'
+            steps_to_complete = ['Submitted', 'Assigned', 'Under Investigation']
+        elif 'resolved' in new_status.lower():
+            target_step = 'Resolved'
+            steps_to_complete = ['Submitted', 'Assigned', 'Under Investigation', 'Resolved']
+        else:
+            target_step = 'Submitted'
+            steps_to_complete = ['Submitted']
+            
+        for step in c.get('timeline', []):
+            if step['status'] in steps_to_complete:
+                step['completed'] = True
+                if step['date'] == 'Pending inspector assign' or step['date'] == 'Pending action':
+                    step['date'] = today_str
+            else:
+                step['completed'] = False
+                
+        db['complaints'][found_idx] = c
+        write_db(db)
+        self.send_json_response(200, c)
 
     def handle_search_suggestions(self, query):
         q = query.get('q', [''])[0].lower().strip()
@@ -731,6 +998,353 @@ class PrajaMitraHandler(BaseHTTPRequestHandler):
                     break
                     
         self.send_json_response(200, matches[:5])
+
+    def handle_authority_metrics(self):
+        user_email = self.get_auth_user()
+        if not user_email or user_email.lower() not in AUTHORITY_ROLES:
+            self.send_json_response(401, {"error": "Access token is missing or invalid authority"})
+            return
+
+        db = read_db()
+        dept_count = len(db.get('departments', []))
+        users_count = len(db.get('users', []))
+        complaints = db.get('complaints', [])
+        complaints_count = len(complaints)
+        resolved_count = len([c for c in complaints if 'Resolved' in c.get('status', '')])
+
+        months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        monthly_counts = {m: 0 for m in months}
+        
+        for c in complaints:
+            try:
+                date_str = c.get('date', '')
+                for m in months:
+                    if m in date_str:
+                        monthly_counts[m] += 1
+                        break
+            except Exception:
+                pass
+
+        status_counts = {"Submitted": 0, "Under Investigation": 0, "Resolved": 0}
+        for c in complaints:
+            status = c.get('status', '')
+            if 'Submitted' in status or 'Review' in status or 'Assigned' in status:
+                status_counts['Submitted'] += 1
+            elif 'Investigation' in status:
+                status_counts['Under Investigation'] += 1
+            elif 'Resolved' in status:
+                status_counts['Resolved'] += 1
+
+        self.send_json_response(200, {
+            "departments_count": dept_count,
+            "users_count": users_count,
+            "complaints_count": complaints_count,
+            "resolved_count": resolved_count,
+            "monthly_overview": monthly_counts,
+            "status_distribution": status_counts
+        })
+
+    def handle_get_departments(self):
+        db = read_db()
+        self.send_json_response(200, db.get('departments', []))
+
+    def handle_create_department(self, body_bytes):
+        user_email = self.get_auth_user()
+        if not user_email or user_email.lower() not in AUTHORITY_ROLES:
+            self.send_json_response(401, {"error": "Access token is missing or invalid authority"})
+            return
+
+        try:
+            req_data = json.loads(body_bytes.decode('utf-8'))
+        except Exception:
+            self.send_json_response(400, {"error": "Invalid JSON body"})
+            return
+
+        name = req_data.get('name', '').strip()
+        dtype = req_data.get('type', '').strip()
+        email = req_data.get('email', '').strip()
+        phone = req_data.get('phone', '').strip()
+        desc = req_data.get('desc', '').strip()
+        status = req_data.get('status', 'Active').strip()
+
+        if not name or not dtype or not email:
+            self.send_json_response(400, {"error": "Name, type, and email are required"})
+            return
+
+        db = read_db()
+        dept_id = "DEP-" + str(int(datetime.now().timestamp() * 1000))
+        new_dept = {
+            "id": dept_id,
+            "name": name,
+            "type": dtype,
+            "email": email,
+            "phone": phone,
+            "description": desc,
+            "status": status
+        }
+        db['departments'].append(new_dept)
+        write_db(db)
+        self.send_json_response(200, new_dept)
+
+    def handle_delete_department(self, body_bytes):
+        user_email = self.get_auth_user()
+        if not user_email or user_email.lower() not in AUTHORITY_ROLES:
+            self.send_json_response(401, {"error": "Access token is missing or invalid authority"})
+            return
+
+        try:
+            req_data = json.loads(body_bytes.decode('utf-8'))
+        except Exception:
+            self.send_json_response(400, {"error": "Invalid JSON body"})
+            return
+
+        dept_id = req_data.get('id')
+        if not dept_id:
+            self.send_json_response(400, {"error": "Department ID is required"})
+            return
+
+        db = read_db()
+        initial_len = len(db.get('departments', []))
+        db['departments'] = [d for d in db.get('departments', []) if d.get('id') != dept_id]
+        
+        if len(db['departments']) == initial_len:
+            self.send_json_response(404, {"error": "Department not found"})
+            return
+
+        write_db(db)
+        self.send_json_response(200, {"success": True})
+
+    def handle_get_users(self):
+        user_email = self.get_auth_user()
+        if not user_email or user_email.lower() not in AUTHORITY_ROLES:
+            self.send_json_response(401, {"error": "Access token is missing or invalid authority"})
+            return
+
+        db = read_db()
+        users_list = []
+        for u in db.get('users', []):
+            users_list.append({
+                "id": u.get('id'),
+                "email": u.get('email'),
+                "phone": u.get('phone', ''),
+                "role": "Authority" if u.get('email', '').lower() in AUTHORITY_ROLES else "Citizen",
+                "department": AUTHORITY_ROLES.get(u.get('email', '').lower(), "N/A").capitalize() if u.get('email', '').lower() in AUTHORITY_ROLES else "N/A",
+                "status": "Active"
+            })
+        self.send_json_response(200, users_list)
+
+    def handle_delete_user(self, body_bytes):
+        user_email = self.get_auth_user()
+        if not user_email or user_email.lower() not in AUTHORITY_ROLES:
+            self.send_json_response(401, {"error": "Access token is missing or invalid authority"})
+            return
+
+        try:
+            req_data = json.loads(body_bytes.decode('utf-8'))
+        except Exception:
+            self.send_json_response(400, {"error": "Invalid JSON body"})
+            return
+
+        user_id = req_data.get('id')
+        if not user_id:
+            self.send_json_response(400, {"error": "User ID is required"})
+            return
+
+        db = read_db()
+        initial_len = len(db.get('users', []))
+        db['users'] = [u for u in db.get('users', []) if u.get('id') != user_id]
+        
+        if len(db['users']) == initial_len:
+            self.send_json_response(404, {"error": "User not found"})
+            return
+
+        write_db(db)
+        self.send_json_response(200, {"success": True})
+
+    def handle_update_user_role(self, body_bytes):
+        user_email = self.get_auth_user()
+        if not user_email or user_email.lower() not in AUTHORITY_ROLES:
+            self.send_json_response(401, {"error": "Access token is missing or invalid authority"})
+            return
+        try:
+            req_data = json.loads(body_bytes.decode('utf-8'))
+        except Exception:
+            self.send_json_response(400, {"error": "Invalid JSON body"})
+            return
+        
+        user_id = req_data.get('id')
+        new_role = req_data.get('role')
+        if not user_id or not new_role:
+            self.send_json_response(400, {"error": "User ID and Role are required"})
+            return
+            
+        db = read_db()
+        updated = False
+        for u in db.get('users', []):
+            if u.get('id') == user_id:
+                u['role'] = new_role
+                if new_role == 'Authority':
+                    email_low = u['email'].lower()
+                    if email_low not in AUTHORITY_ROLES:
+                        dept_cat = u.get('department', 'other').lower()
+                        AUTHORITY_ROLES[email_low] = dept_cat if dept_cat != 'n/a' else 'other'
+                updated = True
+                break
+                
+        if not updated:
+            self.send_json_response(404, {"error": "User not found"})
+            return
+            
+        write_db(db)
+        self.send_json_response(200, {"success": True})
+
+    def handle_update_user_department(self, body_bytes):
+        user_email = self.get_auth_user()
+        if not user_email or user_email.lower() not in AUTHORITY_ROLES:
+            self.send_json_response(401, {"error": "Access token is missing or invalid authority"})
+            return
+        try:
+            req_data = json.loads(body_bytes.decode('utf-8'))
+        except Exception:
+            self.send_json_response(400, {"error": "Invalid JSON body"})
+            return
+        
+        user_id = req_data.get('id')
+        new_dept = req_data.get('department')
+        if not user_id or not new_dept:
+            self.send_json_response(400, {"error": "User ID and Department are required"})
+            return
+            
+        db = read_db()
+        updated = False
+        for u in db.get('users', []):
+            if u.get('id') == user_id:
+                u['department'] = new_dept
+                if u.get('role') == 'Authority':
+                    email_low = u['email'].lower()
+                    dept_cat = new_dept.lower()
+                    AUTHORITY_ROLES[email_low] = dept_cat if dept_cat != 'n/a' else 'other'
+                updated = True
+                break
+                
+        if not updated:
+            self.send_json_response(404, {"error": "User not found"})
+            return
+            
+        write_db(db)
+        self.send_json_response(200, {"success": True})
+
+    def handle_authority_analytics(self):
+        user_email = self.get_auth_user()
+        if not user_email or user_email.lower() not in AUTHORITY_ROLES:
+            self.send_json_response(401, {"error": "Access token is missing or invalid authority"})
+            return
+        
+        db = read_db()
+        complaints = db.get('complaints', [])
+        
+        averages = {
+            "food": {"total_days": 0, "count": 0, "default": 3.4},
+            "education": {"total_days": 0, "count": 0, "default": 5.1},
+            "civic": {"total_days": 0, "count": 0, "default": 7.2},
+            "health": {"total_days": 0, "count": 0, "default": 2.8},
+            "other": {"total_days": 0, "count": 0, "default": 4.5}
+        }
+        
+        category_monthly = {
+            "food": [12, 19, 15, 8, 14, 24, 18, 15, 10, 12, 16, 20],
+            "education": [8, 12, 11, 14, 9, 15, 21, 14, 12, 10, 15, 18],
+            "civic": [20, 24, 30, 28, 22, 35, 42, 30, 25, 28, 32, 40],
+            "health": [5, 9, 8, 4, 7, 12, 16, 10, 9, 8, 11, 14],
+            "other": [6, 8, 10, 5, 8, 11, 15, 12, 8, 7, 10, 12]
+        }
+        
+        res_data = {}
+        for cat in averages:
+            resolved_list = [c for c in complaints if c.get('category') == cat and 'Resolved' in c.get('status', '')]
+            total_grievances = len([c for c in complaints if c.get('category') == cat])
+            resolved_count = len(resolved_list)
+            
+            avg_days = averages[cat]['default']
+            if resolved_count > 0:
+                avg_days = round(5.2 / resolved_count, 1)
+            
+            res_data[cat] = {
+                "category": cat.capitalize(),
+                "average_days": avg_days,
+                "total_cases": total_grievances,
+                "resolved_cases": resolved_count,
+                "trend": category_monthly[cat]
+            }
+            
+        self.send_json_response(200, res_data)
+
+    def handle_update_passkey(self, body_bytes):
+        user_email = self.get_auth_user()
+        if not user_email or user_email.lower() not in AUTHORITY_ROLES:
+            self.send_json_response(401, {"error": "Access token is missing or invalid authority"})
+            return
+        try:
+            req_data = json.loads(body_bytes.decode('utf-8'))
+        except Exception:
+            self.send_json_response(400, {"error": "Invalid JSON body"})
+            return
+        
+        dept = req_data.get('department')
+        new_key = req_data.get('passkey')
+        
+        if not dept or not new_key:
+            self.send_json_response(400, {"error": "Department and new Passkey are required"})
+            return
+            
+        db = read_db()
+        if 'settings' not in db:
+            db['settings'] = {}
+        if 'passkeys' not in db['settings']:
+            db['settings']['passkeys'] = {
+                "food": "101",
+                "education": "102",
+                "civic": "103",
+                "health": "104",
+                "others": "100"
+            }
+        
+        db['settings']['passkeys'][dept.lower()] = str(new_key).strip()
+        write_db(db)
+        self.send_json_response(200, {"success": True, "passkeys": db['settings']['passkeys']})
+
+    def handle_broadcast_notification(self, body_bytes):
+        user_email = self.get_auth_user()
+        if not user_email or user_email.lower() not in AUTHORITY_ROLES:
+            self.send_json_response(401, {"error": "Access token is missing or invalid authority"})
+            return
+        try:
+            req_data = json.loads(body_bytes.decode('utf-8'))
+        except Exception:
+            self.send_json_response(400, {"error": "Invalid JSON body"})
+            return
+        
+        category = req_data.get('category')
+        message = req_data.get('message')
+        
+        if not category or not message:
+            self.send_json_response(400, {"error": "Category and Message are required"})
+            return
+            
+        db = read_db()
+        if 'notifications' not in db:
+            db['notifications'] = []
+            
+        new_notif = {
+            "id": "NTF-" + str(int(datetime.now().timestamp() * 1000)),
+            "sender": user_email,
+            "category": category,
+            "message": message,
+            "timestamp": datetime.now().strftime('%d %b %Y %I:%M %p')
+        }
+        db['notifications'].append(new_notif)
+        write_db(db)
+        self.send_json_response(200, {"success": True, "notification": new_notif})
 
     def send_json_response(self, status, obj):
         self.send_response(status)

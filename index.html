@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PrajaMitra - National Grievance Redressal Portal</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <style>
+      :root {
+        --light-bg: #f8fafc;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background: radial-gradient(circle at 50% 50%, #ffffff 0%, #f1f5f9 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      #splash-screen {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .splash-logo {
+        height: 120px;
+        width: auto;
+        margin-bottom: 24px;
+        filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.08));
+        animation: grow-and-glow 2.5s forwards cubic-bezier(0.25, 1, 0.5, 1);
+      }
+
+      .splash-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 48px;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -1px;
+        margin: 0;
+        background: linear-gradient(to right, #0f172a, #1f7a3f);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: fade-up-text 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .splash-tagline {
+        font-size: 14px;
+        color: #475569;
+        margin-top: 10px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        font-weight: 700;
+        animation: fade-up-text 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      @keyframes grow-and-glow {
+        0% {
+          transform: scale(0.8);
+          filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.05));
+          opacity: 0.5;
+        }
+        100% {
+          transform: scale(1.1);
+          filter: drop-shadow(0 10px 30px rgba(31, 122, 63, 0.15));
+          opacity: 1;
+        }
+      }
+
+      @keyframes fade-up-text {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .gov-footer {
+        position: absolute;
+        bottom: 30px;
+        font-size: 11px;
+        color: #475569;
+        letter-spacing: 0.5px;
+      }
+    </style>
+  </head>
+  <body>
+    
+    <div id="splash-screen">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" class="splash-logo" alt="Emblem of India Logo" />
+      <h1 class="splash-title">PrajaMitra</h1>
+      <div class="splash-tagline">National Grievance Portal</div>
+    </div>
+
+    <div class="gov-footer">
+      MINISTRY OF ELECTRONICS & INFORMATION TECHNOLOGY • GOVERNMENT OF INDIA
+    </div>
+
+    <script>
+      // 2.5-second splash screen redirect to main.html
+      window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+          document.body.style.transition = 'opacity 0.6s ease';
+          document.body.style.opacity = '0';
+          setTimeout(() => {
+            window.location.href = 'main.html';
+          }, 600);
+        }, 2500);
+      });
+    </script>
+  </body>
+</html>

@@ -63,7 +63,7 @@
       <div class="dashboard-grid">
         <!-- Sidebar Navigation -->
         <aside class="sidebar-panel">
-          <ul class="sidebar-menu">
+          <ul class="sidebar-menu" id="citizen-sidebar-menu">
             <li class="sidebar-item active" id="menu-track" onclick="switchTab('track')">
               <span class="sidebar-item-icon">📍</span>
               <span data-translate="card_track">Track Status</span>
@@ -71,6 +71,53 @@
             <li class="sidebar-item" id="menu-my" onclick="switchTab('my')">
               <span class="sidebar-item-icon">📋</span>
               <span data-translate="card_my">My Complaints</span>
+            </li>
+            <li class="sidebar-item" id="menu-authority" onclick="switchTab('authority')" style="display:none; border-top:1px solid #e2e8f0; margin-top:10px; padding-top:10px;">
+              <span class="sidebar-item-icon">🛡️</span>
+              <span>Authority Panel</span>
+            </li>
+          </ul>
+
+          <ul class="sidebar-menu" id="authority-sidebar-menu" style="display:none;">
+            <li class="sidebar-item active" id="auth-menu-dashboard" onclick="switchAuthSubTab('dashboard')">
+              <span class="sidebar-item-icon">📊</span>
+              <span>Dashboard</span>
+            </li>
+            <li class="sidebar-item" id="auth-menu-analytics" onclick="switchAuthSubTab('analytics')">
+              <span class="sidebar-item-icon">📈</span>
+              <span>Analytics</span>
+            </li>
+            <li class="sidebar-item" id="auth-menu-departments" onclick="switchAuthSubTab('departments')">
+              <span class="sidebar-item-icon">🏢</span>
+              <span>Departments</span>
+            </li>
+            <li class="sidebar-item" id="auth-menu-users" onclick="switchAuthSubTab('users')">
+              <span class="sidebar-item-icon">👥</span>
+              <span>Users</span>
+            </li>
+            <li class="sidebar-item" id="auth-menu-complaints" onclick="switchAuthSubTab('complaints')">
+              <span class="sidebar-item-icon">📋</span>
+              <span>Complaints</span>
+            </li>
+            <li class="sidebar-item" id="auth-menu-reports" onclick="switchAuthSubTab('reports')">
+              <span class="sidebar-item-icon">📥</span>
+              <span>Reports</span>
+            </li>
+            <li class="sidebar-item" id="auth-menu-notifications" onclick="switchAuthSubTab('notifications')">
+              <span class="sidebar-item-icon">🔔</span>
+              <span>Notifications Center</span>
+            </li>
+            <li class="sidebar-item" id="auth-menu-settings" onclick="switchAuthSubTab('settings')">
+              <span class="sidebar-item-icon">⚙️</span>
+              <span>Settings</span>
+            </li>
+            <li class="sidebar-item" onclick="switchTab('track')" style="border-top:1px solid #e2e8f0; margin-top:10px; padding-top:10px;">
+              <span class="sidebar-item-icon">📍</span>
+              <span>Citizen View</span>
+            </li>
+            <li class="sidebar-item" onclick="userLogout()" style="color:#ef4444;">
+              <span class="sidebar-item-icon">↩️</span>
+              <span>Logout</span>
             </li>
           </ul>
         </aside>
@@ -144,22 +191,151 @@
             </div>
           </div>
 
+          <!-- SECTION 3: AUTHORITY PANEL -->
+          <div class="dashboard-section" id="sec-authority" style="padding: 0; background: transparent; border: none; box-shadow: none;">
+            
+            <!-- SUB-TAB 1: DASHBOARD -->
+            <div id="auth-tab-dashboard" class="auth-sub-tab active"></div>
+
+            <!-- SUB-TAB 1.5: ANALYTICS -->
+            <div id="auth-tab-analytics" class="auth-sub-tab"></div>
+
+            <!-- SUB-TAB 2: DEPARTMENTS LIST -->
+            <div id="auth-tab-departments" class="auth-sub-tab"></div>
+
+            <!-- SUB-TAB 3: ADD NEW DEPARTMENT FORM -->
+            <div id="auth-tab-add-dept" class="auth-sub-tab">
+              <div style="margin-bottom: 24px;">
+                <h2 style="margin: 0; font-size: 24px; font-weight: 800; color: #0f172a;">Add New Department</h2>
+                <p style="margin: 4px 0 0 0; color: #64748b; font-size: 14px;">Create a new department in the system</p>
+              </div>
+
+              <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px; box-shadow: 0 4px 12px rgba(15,23,42,0.02); max-width: 650px;">
+                <form onsubmit="submitNewDepartment(event)">
+                  <div class="form-group" style="margin-bottom: 18px;">
+                    <label style="font-weight:700; font-size:12px; color:#475569; margin-bottom:6px; display:block;">Department Name *</label>
+                    <input type="text" id="add-dept-name" class="form-control" placeholder="Enter department name" required style="padding:10px;">
+                  </div>
+                  <div class="form-group" style="margin-bottom: 18px;">
+                    <label style="font-weight:700; font-size:12px; color:#475569; margin-bottom:6px; display:block;">Department Type *</label>
+                    <select id="add-dept-type" class="form-control" required style="padding:10px; background:#fff; height:auto; border:1px solid #cbd5e1; border-radius:6px; outline:none; width:100%;">
+                      <option value="Food">Food</option>
+                      <option value="Civic">Civic Infrastructure</option>
+                      <option value="Education">Education</option>
+                      <option value="Health">Health</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div class="form-group" style="margin-bottom: 18px;">
+                    <label style="font-weight:700; font-size:12px; color:#475569; margin-bottom:6px; display:block;">Contact Email *</label>
+                    <input type="email" id="add-dept-email" class="form-control" placeholder="Enter contact email" required style="padding:10px;">
+                  </div>
+                  <div class="form-group" style="margin-bottom: 18px;">
+                    <label style="font-weight:700; font-size:12px; color:#475569; margin-bottom:6px; display:block;">Contact Phone</label>
+                    <input type="text" id="add-dept-phone" class="form-control" placeholder="Enter contact phone" style="padding:10px;">
+                  </div>
+                  <div class="form-group" style="margin-bottom: 18px;">
+                    <label style="font-weight:700; font-size:12px; color:#475569; margin-bottom:6px; display:block;">Description</label>
+                    <textarea id="add-dept-desc" class="form-control" placeholder="Enter department description" style="padding:10px; min-height: 80px; resize: vertical; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; width: 100%;"></textarea>
+                  </div>
+                  <div class="form-group" style="margin-bottom: 24px;">
+                    <label style="font-weight:700; font-size:12px; color:#475569; margin-bottom:6px; display:block;">Status *</label>
+                    <select id="add-dept-status" class="form-control" required style="padding:10px; background:#fff; height:auto; border:1px solid #cbd5e1; border-radius:6px; outline:none; width:100%;">
+                      <option value="Active">Active</option>
+                      <option value="Inactive">Inactive</option>
+                    </select>
+                  </div>
+                  <div style="display: flex; gap: 12px;">
+                    <button type="submit" class="btn btn-primary" style="margin:0; background:#16a34a; border-color:#16a34a; padding: 10px 20px;">Save Department</button>
+                    <button type="button" class="btn btn-secondary" onclick="switchAuthSubTab('departments')" style="margin:0; padding: 10px 20px; border-color:#cbd5e1; color:#475569;">Cancel</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- SUB-TAB 4: USERS LIST -->
+            <div id="auth-tab-users" class="auth-sub-tab"></div>
+
+            <!-- SUB-TAB 5: COMPLAINTS TAB -->
+            <div id="auth-tab-complaints" class="auth-sub-tab">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+                <div>
+                  <h2 style="margin: 0; font-size: 24px; font-weight: 800; color: #0f172a;">Category Complaints</h2>
+                  <p style="margin: 4px 0 0 0; color: #64748b; font-size: 14px;">Monitor and change complaint progression</p>
+                </div>
+                <button type="button" class="btn btn-secondary" id="btn-toggle-view-scope" onclick="toggleAuthorityViewScope()" style="border: 1px solid #1f7a3f; color: #1f7a3f; background: #fff; padding: 8px 16px; font-weight:700; cursor:pointer; border-radius:6px; margin:0;">
+                  🌐 View All Problems
+                </button>
+              </div>
+
+              <div class="complaints-list" id="authority-complaints-list" style="display: flex; flex-direction: column; gap: 20px;">
+                <!-- Loaded dynamically -->
+              </div>
+            </div>
+
+            <!-- SUB-TAB 6: REPORTS -->
+            <div id="auth-tab-reports" class="auth-sub-tab"></div>
+
+            <!-- SUB-TAB 7: NOTIFICATIONS -->
+            <div id="auth-tab-notifications" class="auth-sub-tab"></div>
+
+            <!-- SUB-TAB 8: SETTINGS -->
+            <div id="auth-tab-settings" class="auth-sub-tab"></div>
+
+            <!-- SUB-TAB 9: LOGS -->
+            <div id="auth-tab-logs" class="auth-sub-tab"></div>
+
+            <!-- SUB-TAB 10: PROFILE -->
+            <div id="auth-tab-profile" class="auth-sub-tab"></div>
+
+          </div>
+
+          </div>
+
         </section>
       </div>
     </main>
 
     <!-- CODE SCRIPT LOGIC -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="translate.js"></script>
     <script src="accessibility.js"></script>
+    <script src="modules/LoginForm.js"></script>
+    <script src="modules/AuthorityDashboard.js"></script>
+    <script src="modules/Departments.js"></script>
+    <script src="modules/Users.js"></script>
+    <script src="modules/Reports.js"></script>
+    <script src="modules/Notifications.js"></script>
+    <script src="modules/Settings.js"></script>
+    <script src="modules/Analytics.js"></script>
+    <script src="modules/Logs.js"></script>
+    <script src="modules/Profile.js"></script>
     <script>
       let currentTab = 'track';
+
+      const authorities = [
+        "vishnuvardhanpaturi70@gmail.com",
+        "kummarisanthosh886@gmail.com",
+        "kumarprabha275@gmail.com",
+        "harishmadakam101@gmail.com"
+      ];
+      let authorityScopeAll = false;
 
       window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
         const ticketId = urlParams.get('id');
         const view = urlParams.get('view');
+        
+        // Show Authority Panel in sidebar if logged-in user is an authority
+        const isAuth = localStorage.getItem('prajamitra_is_authority') === 'true';
+        if (isAuth) {
+          const authMenuItem = document.getElementById('menu-authority');
+          if (authMenuItem) authMenuItem.style.display = 'block';
+        }
 
-        if (view === 'my-complaints') {
+        if (isAuth && (!view || view === 'authority')) {
+          switchTab('authority');
+        } else if (view === 'my-complaints') {
           switchTab('my');
         } else if (ticketId) {
           switchTab('track');
@@ -174,16 +350,167 @@
       function switchTab(tabName) {
         currentTab = tabName;
         
-        // Update menu active
-        document.getElementById('menu-track').className = tabName === 'track' ? 'sidebar-item active' : 'sidebar-item';
-        document.getElementById('menu-my').className = tabName === 'my' ? 'sidebar-item active' : 'sidebar-item';
+        const citizenSidebar = document.getElementById('citizen-sidebar-menu');
+        const authoritySidebar = document.getElementById('authority-sidebar-menu');
+        
+        if (tabName === 'authority') {
+          const isAuth = localStorage.getItem('prajamitra_is_authority') === 'true';
+          if (!isAuth) {
+            startAdminLoginIntroSequence();
+            return;
+          }
+          if (citizenSidebar) citizenSidebar.style.display = 'none';
+          if (authoritySidebar) authoritySidebar.style.display = 'block';
+          switchAuthSubTab('dashboard');
+        } else {
+          if (citizenSidebar) citizenSidebar.style.display = 'block';
+          if (authoritySidebar) authoritySidebar.style.display = 'none';
+          
+          // Update menu active
+          document.getElementById('menu-track').className = tabName === 'track' ? 'sidebar-item active' : 'sidebar-item';
+          document.getElementById('menu-my').className = tabName === 'my' ? 'sidebar-item active' : 'sidebar-item';
+          
+          const authMenuItem = document.getElementById('menu-authority');
+          if (authMenuItem) {
+            authMenuItem.className = tabName === 'authority' ? 'sidebar-item active' : 'sidebar-item';
+          }
+        }
         
         // Update section active
         document.getElementById('sec-track').className = tabName === 'track' ? 'dashboard-section active' : 'dashboard-section';
         document.getElementById('sec-my').className = tabName === 'my' ? 'dashboard-section active' : 'dashboard-section';
         
+        const secAuthority = document.getElementById('sec-authority');
+        if (secAuthority) {
+          secAuthority.className = tabName === 'authority' ? 'dashboard-section active' : 'dashboard-section';
+        }
+        
         if (tabName === 'my') {
           loadMyComplaints();
+        }
+
+        // Apply admin portal shell rendering toggles
+        updateAdminPortalShell();
+      }
+
+      function updateAdminPortalShell() {
+        const isAuthTab = currentTab === 'authority';
+        const adminLayout = document.getElementById('admin-portal-layout');
+        const govStrip = document.querySelector('.gov-strip');
+        const header = document.querySelector('header.header');
+        const mainWrap = document.querySelector('main.wrap');
+
+        if (isAuthTab) {
+          // Hide standard portal
+          if (govStrip) govStrip.style.display = 'none';
+          if (header) header.style.display = 'none';
+          if (mainWrap) mainWrap.style.display = 'none';
+
+          // Show admin layout
+          if (adminLayout) adminLayout.style.display = 'flex';
+
+          // Move the workspace tabs into the admin workspace mount
+          const mount = document.getElementById('admin-workspace-mount');
+          if (mount) {
+            const subTabs = ['dashboard', 'analytics', 'departments', 'users', 'complaints', 'add-dept', 'reports', 'notifications', 'settings', 'logs', 'profile'];
+            subTabs.forEach(tab => {
+              const div = document.getElementById(`auth-tab-${tab}`);
+              if (div && div.parentElement !== mount) {
+                mount.appendChild(div);
+              }
+            });
+          }
+        } else {
+          // Show standard portal
+          if (govStrip) govStrip.style.display = '';
+          if (header) header.style.display = '';
+          if (mainWrap) mainWrap.style.display = '';
+
+          // Hide admin layout
+          if (adminLayout) adminLayout.style.display = 'none';
+
+          // Restore workspace tabs back to sec-authority
+          const secAuthority = document.getElementById('sec-authority');
+          if (secAuthority) {
+            const subTabs = ['dashboard', 'analytics', 'departments', 'users', 'complaints', 'add-dept', 'reports', 'notifications', 'settings', 'logs', 'profile'];
+            subTabs.forEach(tab => {
+              const div = document.getElementById(`auth-tab-${tab}`);
+              if (div && div.parentElement !== secAuthority) {
+                secAuthority.appendChild(div);
+              }
+            });
+          }
+        }
+      }
+
+      function toggleAdminSidebar() {
+        const sidebar = document.getElementById('admin-sidebar');
+        if (sidebar) {
+          if (sidebar.style.width === '0px' || sidebar.style.display === 'none') {
+            sidebar.style.width = '260px';
+            sidebar.style.padding = '20px';
+            sidebar.style.display = 'flex';
+          } else {
+            sidebar.style.width = '0px';
+            sidebar.style.padding = '0px';
+            setTimeout(() => { sidebar.style.display = 'none'; }, 200);
+          }
+        }
+      }
+
+      function switchAuthSubTab(subTabName) {
+        const subTabs = ['dashboard', 'analytics', 'departments', 'users', 'complaints', 'add-dept', 'reports', 'notifications', 'settings', 'logs', 'profile'];
+        subTabs.forEach(tab => {
+          let menuId = `auth-menu-${tab}`;
+          let admMenuId = `adm-menu-${tab}`;
+          if (tab === 'add-dept') {
+            menuId = 'auth-menu-departments';
+            admMenuId = 'adm-menu-departments';
+          }
+          const item = document.getElementById(menuId);
+          if (item) {
+            item.className = (tab === subTabName || (subTabName === 'add-dept' && tab === 'departments')) ? 'sidebar-item active' : 'sidebar-item';
+          }
+          // Sync new shell sidebar active items
+          const admItem = document.getElementById(admMenuId);
+          if (admItem) {
+            if (tab === subTabName || (subTabName === 'add-dept' && tab === 'departments')) {
+              admItem.classList.add('active');
+            } else {
+              admItem.classList.remove('active');
+            }
+          }
+          const div = document.getElementById(`auth-tab-${tab}`);
+          if (div) {
+            if (tab === subTabName) {
+              div.style.display = 'block';
+            } else {
+              div.style.display = 'none';
+            }
+          }
+        });
+
+        // Trigger dynamic module render
+        if (subTabName === 'dashboard') {
+          AuthorityDashboard.render('auth-tab-dashboard');
+        } else if (subTabName === 'analytics') {
+          Analytics.render('auth-tab-analytics');
+        } else if (subTabName === 'departments') {
+          Departments.render('auth-tab-departments');
+        } else if (subTabName === 'users') {
+          Users.render('auth-tab-users');
+        } else if (subTabName === 'reports') {
+          Reports.render('auth-tab-reports');
+        } else if (subTabName === 'notifications') {
+          Notifications.render('auth-tab-notifications');
+        } else if (subTabName === 'settings') {
+          Settings.render('auth-tab-settings');
+        } else if (subTabName === 'logs') {
+          Logs.render('auth-tab-logs');
+        } else if (subTabName === 'profile') {
+          Profile.render('auth-tab-profile');
+        } else if (subTabName === 'complaints') {
+          loadAuthorityComplaints();
         }
       }
 
@@ -376,6 +703,912 @@
         document.getElementById('track-input').value = ticketId;
         trackComplaint(ticketId);
       }
+
+      function toggleAuthorityViewScope() {
+        authorityScopeAll = !authorityScopeAll;
+        const btn = document.getElementById('btn-toggle-view-scope');
+        if (btn) {
+          btn.innerHTML = authorityScopeAll ? '📁 View Category Problems' : '🌐 View All Problems';
+          btn.style.borderColor = authorityScopeAll ? '#d97706' : '#1f7a3f';
+          btn.style.color = authorityScopeAll ? '#d97706' : '#1f7a3f';
+        }
+        loadAuthorityComplaints();
+      }
+
+      function loadAuthorityComplaints() {
+        const container = document.getElementById('authority-complaints-list');
+        container.innerHTML = '';
+
+        const token = localStorage.getItem('prajamitra_token');
+        if (!token) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <span class="empty-state-icon">🔒</span>
+              <h4>Dashboard Requires Login</h4>
+              <p>Please log in with an authority account to access this panel.</p>
+              <button class="btn btn-primary" onclick="openAuthModal()">Login Account</button>
+            </div>
+          `;
+          return;
+        }
+
+        const url = (window.API_BASE || '') + '/api/complaints/user-history' + (authorityScopeAll ? '?all=true' : '');
+        
+        fetch(url, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to load history');
+          return res.json();
+        })
+        .then(complaints => {
+          if (complaints.length === 0) {
+            container.innerHTML = `
+              <div class="empty-state">
+                <span class="empty-state-icon">🛡️</span>
+                <h4>No Complaints Assigned</h4>
+                <p>There are no grievances registered matching the filter criteria.</p>
+              </div>
+            `;
+            return;
+          }
+
+          complaints.forEach(c => {
+            const card = document.createElement('div');
+            card.className = 'complaint-item-card';
+            card.style.display = 'flex';
+            card.style.flexDirection = 'column';
+            card.style.gap = '12px';
+            card.style.padding = '18px';
+
+            let badgeClass = 'submitted';
+            if (c.status.includes('Assigned')) badgeClass = 'assigned';
+            else if (c.status.includes('Under Investigation')) badgeClass = 'investigation';
+            else if (c.status.includes('Resolved')) badgeClass = 'resolved';
+
+            // Check if there is details or media to show
+            let mediaHtml = '';
+            if (c.media && c.media.photo) {
+              mediaHtml = `
+                <div style="margin-top:6px;">
+                  <img src="${c.media.photo}" style="height:60px; width:auto; border-radius:6px; cursor:pointer;" onclick="window.open(this.src)">
+                </div>
+              `;
+            }
+
+            // Reporter details
+            let reporterText = 'Anonymous Citizen';
+            if (!c.anonymous && c.reporter) {
+              reporterText = `👤 ${c.reporter.name || 'Citizen'} (${c.reporter.email || 'N/A'})`;
+            }
+
+            card.innerHTML = `
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; width:100%; gap:12px;">
+                <div>
+                  <h4 style="margin:0; font-size:16px; font-weight:700; color:#1e293b;">${c.title}</h4>
+                  <p style="margin:6px 0; font-size:13px; color:#475569;">${c.description}</p>
+                  <div class="complaint-item-details" style="display:flex; gap:12px; font-size:12px; color:#64748b; flex-wrap:wrap; margin-top:8px;">
+                    <span class="complaint-item-id" style="font-weight:700; color:#1f7a3f;">${c.id}</span>
+                    <span>📅 ${c.date}</span>
+                    <span style="background:#f1f5f9; padding:2px 6px; border-radius:4px; text-transform:uppercase; font-weight:600; font-size:10px;">${c.category}</span>
+                    <span>${reporterText}</span>
+                  </div>
+                  ${mediaHtml}
+                </div>
+                <span class="complaint-item-badge ${badgeClass}" style="margin:0; white-space:nowrap;">${c.status}</span>
+              </div>
+              
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:10px; border-top:1px solid #e2e8f0; width:100%; gap:12px; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:12px; font-weight:700; color:#475569;">Change Status:</span>
+                  <select onchange="updateComplaintStatus('${c.id}', this)" style="padding:6px 10px; border-radius:6px; border:1px solid #cbd5e1; font-size:12px; outline:none; background:#fff; cursor:pointer;">
+                    <option value="Submitted (Under Review)" ${c.status.includes('Review') || c.status.includes('Submitted') ? 'selected' : ''}>Submitted (Under Review)</option>
+                    <option value="Under Investigation" ${c.status.includes('Investigation') ? 'selected' : ''}>Under Investigation</option>
+                    <option value="Resolved" ${c.status.includes('Resolved') ? 'selected' : ''}>Resolved</option>
+                  </select>
+                </div>
+                <button class="btn btn-secondary" onclick="directTrack('${c.id}')" style="padding:6px 12px; font-size:12px; margin:0;">View Timeline Tracker</button>
+              </div>
+            `;
+            container.appendChild(card);
+          });
+        })
+        .catch(err => {
+          console.error(err);
+          container.innerHTML = `<p style="color:#ef4444; text-align:center;">Failed to connect to full-stack server backend. Ensure the server is active.</p>`;
+        });
+      }
+
+      function updateComplaintStatus(complaintId, selectElement) {
+        const newStatus = selectElement.value;
+        const token = localStorage.getItem('prajamitra_token');
+        if (!token) {
+          alert('Session expired. Please login again.');
+          return;
+        }
+
+        selectElement.disabled = true;
+        
+        fetch((window.API_BASE || '') + '/api/complaints/update-status', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ id: complaintId, status: newStatus })
+        })
+        .then(res => {
+          if (!res.ok) throw new Error('Status update failed');
+          return res.json();
+        })
+        .then(data => {
+          alert(`Status for ${complaintId} updated successfully to: ${newStatus}`);
+          loadAuthorityComplaints();
+        })
+        .catch(err => {
+          console.error(err);
+          alert('Error: Only authorized category Ministers can perform status updates.');
+          selectElement.disabled = false;
+          loadAuthorityComplaints();
+        });
+      function scrollToElement(id) {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      function loadAuthorityDashboard() {
+        const token = localStorage.getItem('prajamitra_token');
+        if (!token) return;
+
+        fetch((window.API_BASE || '') + '/api/authority/metrics', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(res => {
+          if (!res.ok) throw new Error();
+          return res.json();
+        })
+        .then(data => {
+          // Update Statistics Cards
+          const statsTotal = document.getElementById('stats-total-count');
+          if (statsTotal) statsTotal.innerText = data.complaints_count;
+          const statsInvest = document.getElementById('stats-invest-count');
+          if (statsInvest) statsInvest.innerText = data.status_distribution['Under Investigation'] || 0;
+          const statsResolved = document.getElementById('stats-resolved-count');
+          if (statsResolved) statsResolved.innerText = data.resolved_count;
+          
+          // Update Admin Metrics Counts
+          const mDept = document.getElementById('metrics-dept-count');
+          if (mDept) mDept.innerText = data.departments_count;
+          const mUsers = document.getElementById('metrics-users-count');
+          if (mUsers) mUsers.innerText = data.users_count;
+          const mComplaints = document.getElementById('metrics-complaints-count');
+          if (mComplaints) mComplaints.innerText = data.complaints_count;
+          const mResolved = document.getElementById('metrics-resolved-count');
+          if (mResolved) mResolved.innerText = data.resolved_count;
+
+          // Render SVGs donut chart & overview line chart
+          drawSVGDonutChart(data.status_distribution, data.complaints_count);
+          drawSVGLineChart(data.monthly_overview);
+        })
+        .catch(err => console.error('Failed to load authority metrics', err));
+
+        // Load recent complaints for the dashboard
+        fetch((window.API_BASE || '') + '/api/complaints/user-history', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(res => res.json())
+        .then(complaints => {
+          const container = document.getElementById('dashboard-recent-list');
+          if (!container) return;
+          container.innerHTML = '';
+          if (complaints.length === 0) {
+            container.innerHTML = `<p style="font-size:13px; color:#94a3b8; text-align:center;">No recent complaints reported.</p>`;
+            return;
+          }
+          
+          // Take first 4 complaints
+          const recents = complaints.slice(0, 4);
+          recents.forEach(c => {
+            let badgeColor = '#3b82f6';
+            let badgeBg = '#eff6ff';
+            let statusLabel = 'New';
+            if (c.status.includes('Investigation')) {
+              badgeColor = '#d97706';
+              badgeBg = '#fffbeb';
+              statusLabel = 'In Progress';
+            } else if (c.status.includes('Resolved')) {
+              badgeColor = '#16a34a';
+              badgeBg = '#f0fdf4';
+              statusLabel = 'Resolved';
+            } else if (c.status.includes('Review') || c.status.includes('Submitted')) {
+              badgeColor = '#6366f1';
+              badgeBg = '#e0e7ff';
+              statusLabel = 'Under Review';
+            }
+            
+            const item = document.createElement('div');
+            item.style.display = 'flex';
+            item.style.justifyContent = 'space-between';
+            item.style.alignItems = 'center';
+            item.style.padding = '10px 0';
+            item.style.borderBottom = '1px solid #f1f5f9';
+            item.innerHTML = `
+              <div>
+                <div style="font-size: 13px; font-weight: 700; color: #1e293b;">${c.title}</div>
+                <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">${c.category} &bull; ${c.date}</div>
+              </div>
+              <span style="font-size: 10px; font-weight: 700; color: ${badgeColor}; background: ${badgeBg}; padding: 4px 10px; border-radius: 20px; text-transform: uppercase;">${statusLabel}</span>
+            `;
+            container.appendChild(item);
+          });
+        })
+        .catch(err => console.error('Failed to load recent complaints for dashboard list', err));
+      }
+
+      function drawSVGDonutChart(dist, total) {
+        const container = document.getElementById('donut-chart-container');
+        const legend = document.getElementById('donut-legend');
+        if (!container || !legend) return;
+
+        container.innerHTML = '';
+        legend.innerHTML = '';
+
+        if (!total || total === 0) {
+          container.innerHTML = `
+            <svg width="100%" height="100%" viewBox="0 0 42 42" class="donut">
+              <circle class="donut-hole" cx="21" cy="21" r="15.915" fill="#fff"></circle>
+              <circle class="donut-ring" cx="21" cy="21" r="15.915" fill="transparent" stroke="#f1f5f9" stroke-width="5"></circle>
+            </svg>
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:12px; font-weight:800; color:#64748b;">0%</div>
+          `;
+          legend.innerHTML = `<div>No data available</div>`;
+          return;
+        }
+
+        const segments = [
+          { label: 'New', count: (dist['Submitted'] || 0) + (dist['Submitted (Under Review)'] || 0), color: '#3b82f6' },
+          { label: 'In Progress', count: dist['Under Investigation'] || 0, color: '#d97706' },
+          { label: 'Resolved', count: dist['Resolved'] || 0, color: '#16a34a' }
+        ];
+
+        // Draw SVG circle components
+        let svgHtml = `
+          <svg width="100%" height="100%" viewBox="0 0 42 42" class="donut" style="transform: rotate(-90deg);">
+            <circle class="donut-hole" cx="21" cy="21" r="15.915" fill="#fff"></circle>
+            <circle class="donut-ring" cx="21" cy="21" r="15.915" fill="transparent" stroke="#f1f5f9" stroke-width="4.5"></circle>
+        `;
+
+        let accumulatedPercent = 0;
+        segments.forEach(seg => {
+          if (seg.count > 0) {
+            const percent = (seg.count / total) * 100;
+            // Stroke dasharray: "percent (100 - percent)"
+            // Stroke dashoffset: 100 - accumulatedPercent
+            const strokeDash = `${percent} ${100 - percent}`;
+            const strokeOffset = 100 - accumulatedPercent;
+            
+            svgHtml += `
+              <circle class="donut-segment" cx="21" cy="21" r="15.915" fill="transparent" 
+                      stroke="${seg.color}" stroke-width="4.5" 
+                      stroke-dasharray="${strokeDash}" stroke-dashoffset="${strokeOffset}"></circle>
+            `;
+            accumulatedPercent += percent;
+          }
+        });
+
+        svgHtml += `</svg>`;
+        container.innerHTML = svgHtml;
+
+        // Add middle count text
+        const resolvedPct = Math.round(((dist['Resolved'] || 0) / total) * 100);
+        container.innerHTML += `
+          <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); text-align:center;">
+            <div style="font-size:16px; font-weight:800; color:#0f172a;">${total}</div>
+            <div style="font-size:9px; color:#94a3b8; font-weight:600; text-transform:uppercase;">Total</div>
+          </div>
+        `;
+
+        // Render legend list with color bullet
+        segments.forEach(seg => {
+          const pct = Math.round((seg.count / total) * 100);
+          legend.innerHTML += `
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="background:${seg.color}; width:8px; height:8px; border-radius:50%; display:inline-block;"></span>
+              <span style="font-weight:600; color:#475569;">${seg.label} (${seg.count})</span>
+            </div>
+          `;
+        });
+      }
+
+      function drawSVGLineChart(overview) {
+        const container = document.getElementById('line-chart-container');
+        if (!container) return;
+
+        container.innerHTML = '';
+        
+        // Month names array
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const values = months.map(m => overview[m] || 0);
+        
+        const maxValue = Math.max(...values, 5); // default grid scale max of at least 5
+
+        // Let's create an SVG grid width 100% height 100%
+        const width = 500;
+        const height = 180;
+        
+        const points = [];
+        const paddingLeft = 30;
+        const paddingRight = 20;
+        const paddingTop = 20;
+        const paddingBottom = 20;
+        
+        const activeWidth = width - paddingLeft - paddingRight;
+        const activeHeight = height - paddingTop - paddingBottom;
+        
+        values.forEach((v, idx) => {
+          const x = paddingLeft + (idx * (activeWidth / (values.length - 1)));
+          const y = height - paddingBottom - (v / maxValue * activeHeight);
+          points.push({ x, y, value: v, month: months[idx] });
+        });
+
+        // Construct SVG path string
+        let pathD = `M ${points[0].x} ${points[0].y}`;
+        for (let i = 1; i < points.length; i++) {
+          pathD += ` L ${points[i].x} ${points[i].y}`;
+        }
+
+        // Draw grid lines
+        let gridHtml = '';
+        for (let i = 0; i <= 4; i++) {
+          const yVal = paddingTop + (i * (activeHeight / 4));
+          const gridLabel = Math.round(maxValue - (i * (maxValue / 4)));
+          gridHtml += `
+            <text x="5" y="${yVal + 4}" fill="#94a3b8" font-size="10" font-weight="600">${gridLabel}</text>
+            <line x1="${paddingLeft}" y1="${yVal}" x2="${width - paddingRight}" y2="${yVal}" stroke="#f1f5f9" stroke-width="1" />
+          `;
+        }
+
+        // Draw horizontal month labels
+        let monthLabelsHtml = '';
+        points.forEach((pt, idx) => {
+          monthLabelsHtml += `
+            <text x="${pt.x}" y="${height - 2}" fill="#94a3b8" font-size="10" font-weight="600" text-anchor="middle">${pt.month}</text>
+            <circle cx="${pt.x}" cy="${pt.y}" r="4.5" fill="#16a34a" stroke="#fff" stroke-width="1.5" />
+          `;
+        });
+
+        const svgHtml = `
+          <svg width="100%" height="100%" viewBox="0 0 ${width} ${height}" style="overflow:visible;">
+            <!-- Grid -->
+            ${gridHtml}
+            <!-- Line Path Area Gradient -->
+            <defs>
+              <linearGradient id="chart-area-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#16a34a" stop-opacity="0.2"/>
+                <stop offset="100%" stop-color="#16a34a" stop-opacity="0.0"/>
+              </linearGradient>
+            </defs>
+            <path d="${pathD} L ${points[points.length-1].x} ${height - paddingBottom} L ${points[0].x} ${height - paddingBottom} Z" fill="url(#chart-area-grad)" />
+            <!-- Line path line -->
+            <path d="${pathD}" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            <!-- Dots & Labels -->
+            ${monthLabelsHtml}
+          </svg>
+        `;
+        container.innerHTML = svgHtml;
+      }
+
+      function filterDepartmentsTable(query) {
+        const trs = document.querySelectorAll('#departments-table-body tr');
+        const q = query.toLowerCase().trim();
+        trs.forEach(tr => {
+          if (!tr.innerText) return;
+          if (tr.innerText.toLowerCase().includes(q)) {
+            tr.style.display = '';
+          } else {
+            tr.style.display = 'none';
+          }
+        });
+      }
+
+      function filterUsersTable(query) {
+        const trs = document.querySelectorAll('#users-table-body tr');
+        const q = query.toLowerCase().trim();
+        trs.forEach(tr => {
+          if (!tr.innerText) return;
+          if (tr.innerText.toLowerCase().includes(q)) {
+            tr.style.display = '';
+          } else {
+            tr.style.display = 'none';
+          }
+        });
+      }
+
+      function loadDepartmentsTable() {
+        const token = localStorage.getItem('prajamitra_token');
+        if (!token) return;
+
+        fetch((window.API_BASE || '') + '/api/departments', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(res => res.json())
+        .then(depts => {
+          const tbody = document.getElementById('departments-table-body');
+          tbody.innerHTML = '';
+          if (depts.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="padding:16px; text-align:center; color:#94a3b8;">No registered departments available.</td></tr>`;
+            return;
+          }
+          
+          depts.forEach(d => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #f1f5f9';
+            tr.innerHTML = `
+              <td style="padding:12px; font-size:13px; color:#0f172a; font-weight:600;">${d.name}</td>
+              <td style="padding:12px; font-size:13px; color:#475569;"><span style="background:#f1f5f9; padding:2px 6px; border-radius:4px; text-transform:uppercase; font-size:10px; font-weight:700;">${d.type}</span></td>
+              <td style="padding:12px; font-size:13px; color:#475569;">${d.email}</td>
+              <td style="padding:12px; font-size:13px;"><span style="color:#1f7a3f; font-weight:700; background:#f0fdf4; padding:2px 6px; border-radius:4px; font-size:11px;">${d.status}</span></td>
+              <td style="padding:12px; text-align:right;">
+                <button class="btn" onclick="deleteDepartment('${d.id}')" style="background:#fee2e2; color:#b91c1c; border:none; padding:4px 10px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:700; margin:0;">Delete</button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        })
+        .catch(err => console.error(err));
+      }
+
+      function loadUsersTable() {
+        const token = localStorage.getItem('prajamitra_token');
+        if (!token) return;
+
+        fetch((window.API_BASE || '') + '/api/users', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(res => res.json())
+        .then(users => {
+          const tbody = document.getElementById('users-table-body');
+          tbody.innerHTML = '';
+          if (users.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="padding:16px; text-align:center; color:#94a3b8;">No registered platform users available.</td></tr>`;
+            return;
+          }
+          
+          users.forEach(u => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #f1f5f9';
+            tr.innerHTML = `
+              <td style="padding:12px; font-size:13px; color:#0f172a; font-weight:600;">${u.email}</td>
+              <td style="padding:12px; font-size:13px; color:#475569;">${u.phone || 'N/A'}</td>
+              <td style="padding:12px; font-size:13px;"><span style="color:${u.role === 'Authority' ? '#d97706' : '#2563eb'}; font-weight:700; background:${u.role === 'Authority' ? '#fffbeb' : '#eff6ff'}; padding:2px 6px; border-radius:4px; font-size:11px;">${u.role}</span></td>
+              <td style="padding:12px; font-size:13px; color:#475569;">${u.department}</td>
+              <td style="padding:12px; text-align:right;">
+                <button class="btn" onclick="deleteUser('${u.id}')" style="background:#fee2e2; color:#b91c1c; border:none; padding:4px 10px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:700; margin:0;">Delete</button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        })
+        .catch(err => console.error(err));
+      }
+
+      function submitNewDepartment(e) {
+        e.preventDefault();
+        const token = localStorage.getItem('prajamitra_token');
+        if (!token) return;
+
+        const name = document.getElementById('add-dept-name').value;
+        const type = document.getElementById('add-dept-type').value;
+        const email = document.getElementById('add-dept-email').value;
+        const phone = document.getElementById('add-dept-phone').value;
+        const desc = document.getElementById('add-dept-desc').value;
+        const status = document.getElementById('add-dept-status').value;
+
+        fetch((window.API_BASE || '') + '/api/departments', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ name, type, email, phone, desc, status })
+        })
+        .then(res => {
+          if (!res.ok) throw new Error();
+          return res.json();
+        })
+        .then(data => {
+          alert('New Department successfully registered in databases directory!');
+          document.getElementById('add-dept-name').value = '';
+          document.getElementById('add-dept-email').value = '';
+          document.getElementById('add-dept-phone').value = '';
+          document.getElementById('add-dept-desc').value = '';
+          switchAuthSubTab('departments');
+        })
+        .catch(err => alert('Failed to register department.'));
+      }
+
+      function deleteDepartment(deptId) {
+        if (!confirm('Are you sure you want to delete this department directory entry?')) return;
+        const token = localStorage.getItem('prajamitra_token');
+        if (!token) return;
+
+        fetch((window.API_BASE || '') + '/api/departments/delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ id: deptId })
+        })
+        .then(res => {
+          if (!res.ok) throw new Error();
+          return res.json();
+        })
+        .then(() => {
+          alert('Department deleted successfully.');
+          loadDepartmentsTable();
+          loadAuthorityDashboard();
+        })
+        .catch(err => alert('Failed to delete department.'));
+      }
+
+      function deleteUser(userId) {
+        if (!confirm('Are you sure you want to delete this user profile?')) return;
+        const token = localStorage.getItem('prajamitra_token');
+        if (!token) return;
+
+        fetch((window.API_BASE || '') + '/api/users/delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ id: userId })
+        })
+        .then(res => {
+          if (!res.ok) throw new Error();
+          return res.json();
+        })
+        .then(() => {
+          alert('User deleted successfully.');
+          loadUsersTable();
+          loadAuthorityDashboard();
+        })
+        .catch(err => alert('Failed to delete user.'));
+      }
+
+      function generateAuthoritySummaryReport() {
+        alert('Generating Platform Summary Report...\n\nAll grievances data compiling into CSV report. Check your browser downloads folder shortly.');
+      }
+
+      function startAdminLoginIntroSequence() {
+        const overlay = document.getElementById('admin-login-overlay');
+        if (!overlay) return;
+
+        // Reset elements styles
+        overlay.style.display = 'flex';
+        overlay.style.opacity = '1';
+        
+        // Generate Ashoka Chakra spokes programmatically
+        const spokesGroup = document.getElementById('admin-spokes-group');
+        if (spokesGroup) {
+          spokesGroup.innerHTML = '';
+          for (let i = 0; i < 24; i++) {
+            const angle = (i * 360) / 24;
+            const rad = (angle * Math.PI) / 180;
+            const x2 = 50 + 46 * Math.cos(rad);
+            const y2 = 50 + 46 * Math.sin(rad);
+            spokesGroup.innerHTML += `<line x1="50" y1="50" x2="${x2}" y2="${y2}" stroke="#000080" stroke-width="1"></line>`;
+          }
+        }
+
+        // Ribbons setup
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        
+        const saffronPath = document.getElementById('admin-ribbon-saffron');
+        const whitePath = document.getElementById('admin-ribbon-white');
+        const greenPath = document.getElementById('admin-ribbon-green');
+
+        saffronPath.setAttribute('d', `M -100,-100 C ${w * 0.25},${h * 0.4} ${w * 0.5},${h * 0.2} ${w * 0.5},${h * 0.5}`);
+        whitePath.setAttribute('d', `M -80,-80 C ${w * 0.27},${h * 0.42} ${w * 0.48},${h * 0.22} ${w * 0.5},${h * 0.5}`);
+        greenPath.setAttribute('d', `M -60,-60 C ${w * 0.29},${h * 0.44} ${w * 0.46},${h * 0.24} ${w * 0.5},${h * 0.5}`);
+
+        // Spin Chakra continuously
+        gsap.to('#admin-chakra', { rotation: 360, duration: 25, repeat: -1, ease: "none" });
+
+        const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
+
+        // Wave animation for flag
+        gsap.to('#admin-flying-flag', {
+          yoyo: true,
+          repeat: -1,
+          duration: 0.6,
+          y: "+=6",
+          skewY: "+=3",
+          ease: "sine.inOut"
+        });
+
+        // Scene 1: Flag and Ribbon entry
+        tl.set('#admin-flying-flag', { x: -200, y: -200, scale: 0.6, opacity: 0 });
+        tl.set(['#admin-ribbon-saffron', '#admin-ribbon-white', '#admin-ribbon-green'], { strokeWidth: 0, strokeDasharray: 1000, strokeDashoffset: 1000 });
+
+        tl.to('#admin-flying-flag', { opacity: 1, duration: 0.4 });
+        
+        tl.to('#admin-flying-flag', {
+          x: w * 0.5 - 70, 
+          y: h * 0.5 - 45, 
+          scale: 1.2, 
+          duration: 1.8, 
+          ease: "power2.inOut"
+        }, 0);
+
+        tl.to(['#admin-ribbon-saffron', '#admin-ribbon-white', '#admin-ribbon-green'], {
+          strokeWidth: 10,
+          strokeDashoffset: 0,
+          duration: 1.8,
+          ease: "power2.inOut"
+        }, 0);
+
+        // Scene 2: Orbitting around Emblem, Chakra & Emblem fade in
+        tl.to('#admin-chakra', { opacity: 0.8, scale: 1, duration: 0.8 }, 1.4);
+        tl.to('#admin-emblem-img', { opacity: 1, scale: 1, duration: 1.0 }, 1.4);
+        
+        tl.to('#admin-flying-flag', { scale: 1.6, opacity: 0, duration: 0.8 }, 1.8);
+        tl.to(['#admin-ribbon-saffron', '#admin-ribbon-white', '#admin-ribbon-green'], { opacity: 0, duration: 0.8 }, 2.0);
+
+        // Ring Glow (Scene 3)
+        tl.to('#admin-ring', { opacity: 1, scale: 1.05, duration: 0.6 }, 2.2);
+        
+        // Metallic Shine overlay trigger
+        tl.to('#admin-shine', { opacity: 1, duration: 0.2 }, 2.4);
+        tl.to('#admin-shine', { backgroundPosition: "200% 0", duration: 1.5 }, 2.4);
+        tl.to('#admin-emblem-img', { filter: "drop-shadow(0 0 25px rgba(255,215,0,0.6))", duration: 1.0 }, 2.4);
+
+        // Scene 4: Scaling Down transition to Login Form Card
+        tl.to('#admin-ring', { opacity: 0, duration: 0.4 }, 3.8);
+        tl.to('#admin-emblem-img', { filter: "drop-shadow(0 0 0px rgba(0,0,0,0))", duration: 0.4 }, 3.8);
+
+        // Move Emblem wrap to docker position
+        const dock = document.getElementById('admin-emblem-dock');
+        const centralWrap = document.getElementById('admin-emblem-wrap');
+        const dockRect = dock.getBoundingClientRect();
+        const wrapRect = centralWrap.getBoundingClientRect();
+
+        const deltaX = dockRect.left + dockRect.width/2 - (wrapRect.left + wrapRect.width/2);
+        const deltaY = dockRect.top + dockRect.height/2 - (wrapRect.top + wrapRect.height/2);
+
+        tl.to('#admin-emblem-wrap', {
+          x: deltaX,
+          y: deltaY,
+          scale: 0.4,
+          duration: 1.0,
+          ease: "power3.inOut"
+        }, 4.0);
+
+        tl.add(() => {
+          // Reparent
+          dock.appendChild(centralWrap);
+          gsap.set(centralWrap, { x: 0, y: 0, scale: 1, position: 'relative', width: '100%', height: '100%' });
+          gsap.set('#admin-emblem-img', { height: '64px' });
+          gsap.set('#admin-chakra', { height: '80px', width: '80px' });
+        });
+
+        tl.to('#admin-login-bg', { opacity: 1, duration: 0.6 }, 4.6);
+        tl.to('#admin-login-card', { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }, 4.6);
+        tl.to(['#admin-gov-strip', '#admin-gov-footer'], { opacity: 1, duration: 0.6 }, 4.8);
+      }
+
+      function cancelAdminLoginOverlay() {
+        const overlay = document.getElementById('admin-login-overlay');
+        if (overlay) overlay.style.display = 'none';
+        
+        // Revert emblem back to central container for next time
+        const centralWrap = document.getElementById('admin-emblem-wrap');
+        const bodyContainer = document.getElementById('admin-login-overlay');
+        if (centralWrap && bodyContainer) {
+          bodyContainer.appendChild(centralWrap);
+          gsap.set(centralWrap, { position: 'relative', width: '300px', height: '300px' });
+          gsap.set('#admin-emblem-img', { height: '160px', opacity: 0 });
+          gsap.set('#admin-chakra', { height: '220px', width: '220px', opacity: 0 });
+        }
+        
+        switchTab('track');
+      }
+
+      function submitAdminOverlayLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById('overlay-auth-email').value.trim();
+        const department = document.getElementById('overlay-auth-dept').value;
+        const passcode = document.getElementById('overlay-auth-passcode').value.trim();
+
+        fetch((window.API_BASE || '') + '/api/auth/authority', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, department, passcode })
+        })
+        .then(res => {
+          if (!res.ok) throw new Error();
+          return res.json();
+        })
+        .then(data => {
+          localStorage.setItem('prajamitra_token', data.token);
+          localStorage.setItem('prajamitra_user_email', data.email);
+          localStorage.setItem('prajamitra_user_phone', '');
+          localStorage.setItem('prajamitra_is_authority', 'true');
+          
+          const overlay = document.getElementById('admin-login-overlay');
+          if (overlay) overlay.style.display = 'none';
+          
+          alert('Logged in successfully as Authority Admin!');
+          switchTab('authority');
+        })
+        .catch(err => {
+          alert('Invalid Email, Department, or Passcode!');
+        });
+      }
     </script>
+
+    <!-- AUTHORITY ADMIN LOGIN OVERLAY -->
+    <div id="admin-login-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 9999; align-items: center; justify-content: center; overflow: hidden; flex-direction: column; font-family: 'Plus Jakarta Sans', sans-serif;">
+      
+      <!-- TOP GOVERNMENT STRIP -->
+      <header class="gov-strip" id="admin-gov-strip" style="position: fixed; top: 0; left: 0; width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 8px 24px; font-size: 11px; font-weight: 700; color: #475569; z-index: 100; letter-spacing: 0.5px; text-transform: uppercase; opacity: 0; background: rgba(255, 255, 255, 0.9); border-bottom: 1px solid rgba(0,0,0,0.06);">
+        <div class="gov-left" style="display: flex; align-items: center; gap: 8px;">
+          <img class="gov-flag" src="https://upload.wikimedia.org/wikipedia/commons/4/41/Flag_of_India.svg" alt="Tricolor Flag" style="height: 12px; width: auto;" />
+          <span>Government of India</span>
+        </div>
+      </header>
+
+      <!-- Background blurred circles -->
+      <div class="login-background" id="admin-login-bg" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:-2; opacity:0; background: radial-gradient(circle at 10% 20%, #f1f5f9 0%, #e2e8f0 100%);">
+        <div class="bg-blur-circle-1" style="position: absolute; width: 600px; height: 600px; background: radial-gradient(circle, rgba(22, 163, 74, 0.08) 0%, rgba(22, 163, 74, 0) 70%); top: -150px; left: -150px; border-radius: 50%; filter: blur(60px);"></div>
+        <div class="bg-blur-circle-2" style="position: absolute; width: 700px; height: 700px; background: radial-gradient(circle, rgba(255, 153, 51, 0.06) 0%, rgba(255, 153, 51, 0) 70%); bottom: -200px; right: -200px; border-radius: 50%; filter: blur(80px);"></div>
+      </div>
+
+      <!-- Sweeping Ribbon SVG -->
+      <svg id="admin-silk-ribbons" width="100%" height="100%" style="position: absolute; top:0; left:0; pointer-events: none; z-index: 2;">
+        <path id="admin-ribbon-saffron" d="" fill="none" stroke="#FF9933" stroke-width="0" stroke-linecap="round" opacity="0.65" />
+        <path id="admin-ribbon-white" d="" fill="none" stroke="#FFFFFF" stroke-width="0" stroke-linecap="round" opacity="0.75" />
+        <path id="admin-ribbon-green" d="" fill="none" stroke="#128807" stroke-width="0" stroke-linecap="round" opacity="0.65" />
+      </svg>
+
+      <!-- Flying Flag (Scene 1) -->
+      <svg id="admin-flying-flag" width="140" height="90" viewBox="0 0 120 80" style="position: absolute; z-index: 10; opacity: 0; pointer-events: none;">
+        <path d="M0,0 Q30,12 60,0 T120,0 L120,26 Q90,38 60,26 T0,26 Z" fill="#FF9933"></path>
+        <path d="M0,26 Q30,38 60,26 T120,26 L120,53 Q90,65 60,53 T0,53 Z" fill="#FFFFFF"></path>
+        <path d="M0,53 Q30,65 60,53 T120,53 L120,80 Q90,92 60,80 T0,80 Z" fill="#128807"></path>
+        <circle cx="60" cy="39" r="10" fill="none" stroke="#000080" stroke-width="1"></circle>
+        <circle cx="60" cy="39" r="2" fill="#000080"></circle>
+        <line x1="60" y1="29" x2="60" y2="49" stroke="#000080" stroke-width="0.5"></line>
+        <line x1="50" y1="39" x2="70" y2="39" stroke="#000080" stroke-width="0.5"></line>
+      </svg>
+
+      <!-- Central Emblem & Chakra -->
+      <div class="emblem-container" id="admin-emblem-wrap" style="position: relative; display: flex; align-items: center; justify-content: center; width: 300px; height: 300px;">
+        <svg id="admin-chakra" width="220" height="220" viewBox="0 0 100 100" style="position: absolute; pointer-events: none; z-index:1;">
+          <circle cx="50" cy="50" r="46" fill="none" stroke="#000080" stroke-width="2.5" opacity="0.8"></circle>
+          <circle cx="50" cy="50" r="8" fill="none" stroke="#000080" stroke-width="2"></circle>
+          <g id="admin-spokes-group"></g>
+        </svg>
+        <div class="glowing-ring" id="admin-ring" style="position: absolute; width: 190px; height: 190px; border-radius: 50%; border: 3px solid transparent; background: linear-gradient(to right, #ff9933, #ffffff, #16a34a) border-box; -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: destination-out; mask-composite: exclude; opacity: 0; z-index: 3;"></div>
+        <img id="admin-emblem-img" src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="State Emblem of India" style="position: absolute; height: 160px; z-index: 2; opacity: 0;" />
+        <div class="emblem-shine" id="admin-shine" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.6) 45%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 55%, transparent 70%); background-size: 200% 100%; mix-blend-mode: overlay; pointer-events: none; opacity: 0;"></div>
+      </div>
+
+      <!-- GLASSMORPHIC LOGIN CARD -->
+      <div id="admin-login-card" style="width: 100%; max-width: 440px; padding: 40px; background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 24px; box-shadow: 0 20px 40px rgba(15, 23, 42, 0.05); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); z-index: 10; display: flex; flex-direction: column; align-items: center; opacity: 0; transform: translateY(40px); margin-top:-40px;">
+        <div id="admin-emblem-dock" style="height: 70px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; position: relative; width: 100px;"></div>
+        <h1 style="font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; color: #0f172a; margin-bottom: 2px;">PrajaMitra</h1>
+        <div style="font-size: 11px; color: #475569; font-weight: 700; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 30px;">Authority Admin</div>
+
+        <form onsubmit="submitAdminOverlayLogin(event)" style="width: 100%;">
+          <div class="form-group" style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;">
+            <label style="font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Select Department *</label>
+            <select id="overlay-auth-dept" class="form-control" required style="padding:12px; border:1px solid #cbd5e1; border-radius:12px; font-size:14px; background:#fff; outline:none; font-family:inherit; width:100%;">
+              <option value="food">Food Department</option>
+              <option value="civic">Civic Infrastructure</option>
+              <option value="education">Education</option>
+              <option value="health">Health Department</option>
+              <option value="others">Others</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;">
+            <label style="font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Minister Email *</label>
+            <input type="email" id="overlay-auth-email" class="form-control" placeholder="minister@gov.in" required style="padding:12px 14px; border:1px solid #cbd5e1; border-radius:12px; font-size:14px; outline:none; font-family:inherit; width:100%; background:transparent; color:#0f172a;" />
+          </div>
+          <div class="form-group" style="margin-bottom: 24px; display: flex; flex-direction: column; gap: 6px;">
+            <label style="font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Passkey Code *</label>
+            <input type="password" id="overlay-auth-passcode" class="form-control" placeholder="••••" required style="padding:12px 14px; border:1px solid #cbd5e1; border-radius:12px; font-size:14px; outline:none; font-family:inherit; width:100%; background:transparent; color:#0f172a;" />
+          </div>
+
+          <button type="submit" class="login-btn" style="width: 100%; padding: 14px; background: #16a34a; color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.15);">
+            🔒 Authenticate Securely
+          </button>
+        </form>
+
+        <div style="width: 100%; display: flex; justify-content: center; margin-top: 18px;">
+          <a href="#" onclick="cancelAdminLoginOverlay()" style="color: #475569; font-size: 13px; font-weight: 700; text-decoration: none;">❌ Cancel & Return</a>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <footer class="gov-footer" id="admin-gov-footer" style="position: fixed; bottom: 0; left: 0; width: 100%; padding: 16px; text-align: center; font-size: 10px; font-weight: 700; color: #475569; letter-spacing: 0.5px; z-index: 100; opacity: 0; background: rgba(255, 255, 255, 0.9); border-top: 1px solid rgba(0,0,0,0.06);">
+        Ministry of Electronics & Information Technology &bull; Government of India
+      </footer>
+    </div>
+
+    <!-- NEW ADMIN PANEL PORTAL LAYOUT MATCHING USER MOCKUP -->
+    <div id="admin-portal-layout" style="display: none; flex-direction: column; width: 100vw; height: 100vh; overflow: hidden; font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; position: fixed; top: 0; left: 0; z-index: 9998;">
+      <!-- Admin Header -->
+      <header style="display: flex; align-items: center; justify-content: space-between; height: 70px; padding: 0 24px; background: #ffffff; border-bottom: 1px solid #e2e8f0; z-index: 100; width: 100%; box-sizing: border-box;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <button type="button" onclick="toggleAdminSidebar()" style="border: none; background: none; font-size: 20px; cursor: pointer; color: #1e293b;">☰</button>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 800; color: #1f7a3f; letter-spacing: -0.5px;">PrajaMitra</span>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+          <!-- Notifications Bell -->
+          <div style="position: relative; cursor: pointer;" onclick="switchAuthSubTab('notifications')">
+            <span style="font-size: 20px;">🔔</span>
+            <span style="position: absolute; top: -2px; right: -2px; background: #ef4444; color: #ffffff; font-size: 9px; font-weight: 700; width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #ffffff;">2</span>
+          </div>
+          <!-- User profile -->
+          <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="switchAuthSubTab('profile')">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover;" />
+            <div style="display: flex; flex-direction: column; text-align: left;">
+              <span style="font-size: 13px; font-weight: 700; color: #1e293b;">Admin</span>
+              <span style="font-size: 11px; color: #64748b;">Super Admin</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Admin Body -->
+      <div style="display: flex; flex: 1; overflow: hidden; width: 100%;">
+        <!-- Sidebar -->
+        <aside id="admin-sidebar" style="width: 260px; background: #ffffff; border-right: 1px solid #e2e8f0; padding: 20px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; box-sizing: border-box; transition: width 0.2s, padding 0.2s;">
+          <button class="admin-side-item active" id="adm-menu-dashboard" onclick="switchAuthSubTab('dashboard')">
+            <span class="icon">📊</span> Dashboard
+          </button>
+          <button class="admin-side-item" id="adm-menu-departments" onclick="switchAuthSubTab('departments')">
+            <span class="icon">🏢</span> Departments
+          </button>
+          <button class="admin-side-item" id="adm-menu-users" onclick="switchAuthSubTab('users')">
+            <span class="icon">👥</span> Users
+          </button>
+          <button class="admin-side-item" id="adm-menu-complaints" onclick="switchAuthSubTab('complaints')">
+            <span class="icon">📋</span> Complaints
+          </button>
+          <button class="admin-side-item" id="adm-menu-reports" onclick="switchAuthSubTab('reports')">
+            <span class="icon">📈</span> Reports & Analytics
+          </button>
+          <button class="admin-side-item" id="adm-menu-settings" onclick="switchAuthSubTab('settings')">
+            <span class="icon">⚙️</span> Settings
+          </button>
+          <button class="admin-side-item" id="adm-menu-logs" onclick="switchAuthSubTab('logs')">
+            <span class="icon">📝</span> Logs
+          </button>
+          <button class="admin-side-item" id="adm-menu-profile" onclick="switchAuthSubTab('profile')">
+            <span class="icon">👤</span> Profile
+          </button>
+          <div style="margin-top: auto; border-top: 1px solid #f1f5f9; padding-top: 10px;">
+            <button class="admin-side-item" onclick="switchTab('track')" style="color: #475569;">
+              <span class="icon">📍</span> Citizen View
+            </button>
+            <button class="admin-side-item logout" onclick="userLogout()" style="color: #ef4444;">
+              <span class="icon">↩️</span> Logout
+            </button>
+          </div>
+        </aside>
+
+        <!-- Main Content Workspace -->
+        <main style="flex: 1; padding: 30px; overflow-y: auto; box-sizing: border-box;">
+           <!-- Dynamic Workspace mounts here -->
+           <div id="admin-workspace-mount" style="width: 100%; height: 100%;"></div>
+        </main>
+      </div>
+    </div>
   </body>
 </html>

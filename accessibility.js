@@ -86,53 +86,103 @@ function injectAccessibilityLayouts() {
   authModal.className = 'modal-overlay';
   authModal.innerHTML = `
     <div class="modal-card" style="max-width: 440px; padding: 30px; text-align: left;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-        <h3 id="auth-modal-title" style="margin:0;">Citizen Login</h3>
-        <button type="button" onclick="closeAuthModal()" style="border:none; background:none; font-size:24px; cursor:pointer; color:#64748b;">×</button>
-      </div>
-      
-      <!-- Login View -->
-      <div id="login-view">
-        <form onsubmit="submitLogin(event)">
-          <div class="form-group">
-            <label>Email Address <span class="required">*</span></label>
-            <input type="email" id="login-email" class="form-control" placeholder="name@example.com" required>
-          </div>
-          <div class="form-group">
-            <label>Password <span class="required">*</span></label>
-            <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
-          </div>
-          <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; margin-top: 10px;">Login</button>
-        </form>
-        <p style="text-align:center; font-size:13px; margin-top:20px; color:#64748b;">
-          New User? <span onclick="switchAuthView('register')" style="color:#1f7a3f; font-weight:700; cursor:pointer;">Register Here</span>
-        </p>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+        <h3 id="auth-modal-title" style="margin:0;">Citizen Access</h3>
+        <button type="button" onclick="closeAuthModal()" style="border:none; background:none; font-size:24px; cursor:pointer; color:#64748b; line-height:1;">×</button>
       </div>
 
-      <!-- Register View -->
-      <div id="register-view" style="display:none;">
-        <form onsubmit="submitRegister(event)">
-          <div class="form-group">
-            <label>Email Address <span class="required">*</span></label>
-            <input type="email" id="reg-email" class="form-control" placeholder="name@example.com" required>
+      <!-- Tab Switcher -->
+      <div id="auth-tabs" style="display:flex; border-bottom:2px solid #e2e8f0; margin-bottom: 20px;">
+        <button type="button" id="tab-citizen" onclick="switchAuthTab('citizen')" style="flex:1; padding:10px; border:none; background:none; font-weight:700; font-size:14px; cursor:pointer; border-bottom:2px solid #1f7a3f; color:#1f7a3f; outline:none;">👤 Citizen</button>
+        <button type="button" id="tab-authority" onclick="switchAuthTab('authority')" style="flex:1; padding:10px; border:none; background:none; font-weight:700; font-size:14px; cursor:pointer; border-bottom:2px solid transparent; color:#64748b; outline:none;">🏛️ Authority</button>
+      </div>
+      
+      <!-- Citizen Auth View wrapper -->
+      <div id="citizen-auth-view">
+        <!-- Login View -->
+        <div id="login-view">
+          <form onsubmit="submitLogin(event)">
+            <div class="form-group">
+              <label>Email Address <span class="required">*</span></label>
+              <input type="email" id="login-email" class="form-control" placeholder="name@example.com" required>
+            </div>
+            <div class="form-group">
+              <label>Password <span class="required">*</span></label>
+              <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; margin-top: 10px;">Login</button>
+          </form>
+          <div style="margin: 15px 0; text-align: center; color: #64748b; font-size: 13px; position: relative;">
+            <span style="background: #fff; padding: 0 10px; position: relative; z-index: 1;">or</span>
+            <div style="position: absolute; top: 50%; left: 0; right: 0; border-top: 1px solid #e2e8f0; z-index: 0;"></div>
           </div>
-          <div class="form-group">
-            <label>Mobile Number <span class="required">*</span></label>
-            <input type="tel" id="reg-phone" class="form-control" placeholder="10-digit number" pattern="[0-9]{10}" required>
+          <button type="button" class="btn btn-secondary" onclick="openGoogleAuthPopup()" style="width:100%; justify-content:center; gap: 8px; border: 1px solid #cbd5e1; background: #fff; color: #374151;">
+            <svg style="width:18px; height:18px;" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            Sign in with Google
+          </button>
+          <p style="text-align:center; font-size:13px; margin-top:20px; color:#64748b;">
+            New User? <span onclick="switchAuthView('register')" style="color:#1f7a3f; font-weight:700; cursor:pointer;">Register Here</span>
+          </p>
+        </div>
+
+        <!-- Register View -->
+        <div id="register-view" style="display:none;">
+          <form onsubmit="submitRegister(event)">
+            <div class="form-group">
+              <label>Email Address <span class="required">*</span></label>
+              <input type="email" id="reg-email" class="form-control" placeholder="name@example.com" required>
+            </div>
+            <div class="form-group">
+              <label>Mobile Number <span class="required">*</span></label>
+              <input type="tel" id="reg-phone" class="form-control" placeholder="10-digit number" pattern="[0-9]{10}" required>
+            </div>
+            <div class="form-group">
+              <label>Password <span class="required">*</span></label>
+              <input type="password" id="reg-password" class="form-control" placeholder="Minimum 6 characters" required>
+            </div>
+            <div class="form-group">
+              <label>Confirm Password <span class="required">*</span></label>
+              <input type="password" id="reg-confirm" class="form-control" placeholder="Confirm password" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; margin-top: 15px;">Register Account</button>
+          </form>
+          <p style="text-align:center; font-size:13px; margin-top:20px; color:#64748b;">
+            Already have an account? <span onclick="switchAuthView('login')" style="color:#1f7a3f; font-weight:700; cursor:pointer;">Login Here</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Authority Auth View wrapper -->
+      <div id="authority-auth-view" style="display:none;">
+        <form onsubmit="submitAuthorityLogin(event)">
+          <div class="form-group" style="margin-bottom:14px;">
+            <label style="font-weight:700; font-size:12px; color:#475569; margin-bottom:6px; display:block;">Email Address <span style="color:#ef4444;">*</span></label>
+            <input type="email" id="auth-email-input" class="form-control" placeholder="minister@example.com" required style="padding:10px;">
           </div>
-          <div class="form-group">
-            <label>Password <span class="required">*</span></label>
-            <input type="password" id="reg-password" class="form-control" placeholder="Minimum 6 characters" required>
+          
+          <div class="form-group" style="margin-bottom:14px;">
+            <label style="font-weight:700; font-size:12px; color:#475569; margin-bottom:6px; display:block;">Select Department <span style="color:#ef4444;">*</span></label>
+            <select id="auth-dept-select" class="form-control" required style="padding:10px; background:#fff; height:auto; border:1px solid #cbd5e1; border-radius:6px; outline:none; width:100%;">
+              <option value="food">Food Department</option>
+              <option value="civic">Civic Infrastructure</option>
+              <option value="education">Education</option>
+              <option value="health">Health Department</option>
+              <option value="others">Others</option>
+            </select>
           </div>
-          <div class="form-group">
-            <label>Confirm Password <span class="required">*</span></label>
-            <input type="password" id="reg-confirm" class="form-control" placeholder="Confirm password" required>
+          
+          <div class="form-group" style="margin-bottom:14px;">
+            <label style="font-weight:700; font-size:12px; color:#475569; margin-bottom:6px; display:block;">Department Passcode <span style="color:#ef4444;">*</span></label>
+            <input type="password" id="auth-passcode-input" class="form-control" placeholder="Enter secret passcode" required style="padding:10px;">
           </div>
-          <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; margin-top: 15px;">Register Account</button>
+          
+          <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; margin-top: 15px; background:#1f7a3f; border-color:#1f7a3f;">Verify & Login</button>
         </form>
-        <p style="text-align:center; font-size:13px; margin-top:20px; color:#64748b;">
-          Already have an account? <span onclick="switchAuthView('login')" style="color:#1f7a3f; font-weight:700; cursor:pointer;">Login Here</span>
-        </p>
       </div>
     </div>
   `;
@@ -192,8 +242,11 @@ function injectAccessibilityLayouts() {
     if (oldVoice) {
       oldVoice.outerHTML = `
         <div style="display:flex; gap:8px; align-items:center;">
-          <button class="voice-btn" onclick="toggleHeaderVoiceSearch()">
-            <span class="mic">🎤</span> <span data-translate="voice_search">Voice Search</span>
+          <button class="voice-btn emergency-voice-btn" onclick="toggleHeaderVoiceSearch()" style="background:#fee2e2; border:1px solid #fca5a5; color:#991b1b; padding:8px 12px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; display:inline-flex; align-items:center; gap:6px; line-height:1; transition:all 0.2s ease;">
+            <span class="mic">🚨</span> <span>Emergency Voice</span>
+          </button>
+          <button class="admin-btn" onclick="openAuthorityModal()" style="background:#0f172a; color:#fff; border:1px solid #1e293b; padding:8px 12px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; display:inline-flex; align-items:center; gap:6px; line-height:1;">
+            🏛️ Authority Admin
           </button>
         </div>
       `;
@@ -317,6 +370,33 @@ function switchAuthView(viewName) {
   }
 }
 
+function switchAuthTab(tabName) {
+  const citizenTab = document.getElementById('tab-citizen');
+  const authorityTab = document.getElementById('tab-authority');
+  const citizenView = document.getElementById('citizen-auth-view');
+  const authorityView = document.getElementById('authority-auth-view');
+  const title = document.getElementById('auth-modal-title');
+  
+  if (tabName === 'citizen') {
+    citizenTab.style.color = '#1f7a3f';
+    citizenTab.style.borderBottomColor = '#1f7a3f';
+    authorityTab.style.color = '#64748b';
+    authorityTab.style.borderBottomColor = 'transparent';
+    citizenView.style.display = 'block';
+    authorityView.style.display = 'none';
+    title.innerText = 'Citizen Access';
+    switchAuthView('login');
+  } else {
+    authorityTab.style.color = '#1f7a3f';
+    authorityTab.style.borderBottomColor = '#1f7a3f';
+    citizenTab.style.color = '#64748b';
+    citizenTab.style.borderBottomColor = 'transparent';
+    citizenView.style.display = 'none';
+    authorityView.style.display = 'block';
+    title.innerText = 'Authority Access';
+  }
+}
+
 // Submit Register API Call
 function submitRegister(e) {
   e.preventDefault();
@@ -373,7 +453,20 @@ function submitLogin(e) {
       
       closeAuthModal();
       checkAuthStatus();
-      location.reload(); // Reload to refresh page auth states
+      
+      const authEmails = [
+        "vishnuvardhanpaturi70@gmail.com",
+        "kummarisanthosh886@gmail.com",
+        "kumarprabha275@gmail.com",
+        "harishmadakam101@gmail.com"
+      ];
+      if (authEmails.includes(data.user.email.toLowerCase())) {
+        localStorage.setItem('prajamitra_is_authority', 'true');
+        location.href = 'track.html?view=authority';
+      } else {
+        localStorage.removeItem('prajamitra_is_authority');
+        location.href = 'main.html';
+      }
     }
   })
   .catch(err => {
@@ -382,7 +475,6 @@ function submitLogin(e) {
   });
 }
 
-// Check if user is authenticated and update header representation
 function checkAuthStatus() {
   const token = localStorage.getItem('prajamitra_token');
   const email = localStorage.getItem('prajamitra_user_email');
@@ -390,12 +482,16 @@ function checkAuthStatus() {
   
   if (token && email && authWrapper) {
     const userName = email.split('@')[0];
+    const isAuthority = localStorage.getItem('prajamitra_is_authority') === 'true';
+    const authLink = isAuthority ? `<a href="track.html?view=authority" class="drop-item" style="color: #1f7a3f; font-weight: 700;">🛡️ Authority Panel</a>` : '';
+    
     authWrapper.innerHTML = `
       <div class="profile-dropdown-container">
         <button class="login-btn profile-trigger" onclick="toggleProfileMenu()">
           👤 ${userName} <span style="font-size:10px; margin-left:4px;">▼</span>
         </button>
         <div class="profile-dropdown-menu" id="profile-dropdown-menu">
+          ${authLink}
           <a href="track.html?view=my-complaints" class="drop-item">My Complaints</a>
           <a href="#" class="drop-item" onclick="openSystemModal('notifications')">Notifications <span class="badge-new" style="margin-left:auto;">2</span></a>
           <a href="#" class="drop-item" onclick="openSystemModal('settings')">Settings</a>
@@ -416,6 +512,7 @@ function userLogout() {
   localStorage.removeItem('prajamitra_token');
   localStorage.removeItem('prajamitra_user_email');
   localStorage.removeItem('prajamitra_user_phone');
+  localStorage.removeItem('prajamitra_is_authority');
   location.href = 'main.html';
 }
 
@@ -586,6 +683,83 @@ function submitEmergencyGrievance(audioBlob) {
 
 let headerVoiceRecognition = null;
 let isHeaderVoiceRecording = false;
+let headerVoiceTranscript = '';
+
+function showGrievanceReceiptModal(ticketId, category, text) {
+  let modal = document.getElementById('receipt-modal-overlay');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'receipt-modal-overlay';
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(8px);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    `;
+    document.body.appendChild(modal);
+  }
+  
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+  const timeStr = today.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+  modal.innerHTML = `
+    <div id="printable-receipt-card" style="width: 100%; max-width: 460px; background: #ffffff; border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border: 1.5px solid #e2e8f0; overflow: hidden; font-family: 'Plus Jakarta Sans', sans-serif; text-align: left; animation: scaleUp 0.3s ease-out;">
+      <div style="background: linear-gradient(135deg, #FF9933, #ffffff, #128807); height: 6px; width: 100%;"></div>
+      <div style="padding: 30px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Emblem of India" style="height: 60px; width: auto; margin-bottom: 10px;" />
+          <h3 style="margin: 0; font-size: 11px; font-weight: 800; color: #475569; letter-spacing: 1px; text-transform: uppercase;">Government of India</h3>
+          <h2 style="margin: 2px 0 0 0; font-size: 18px; font-weight: 800; color: #0f172a; font-family: 'Outfit', sans-serif;">PrajaMitra Redressal Portal</h2>
+        </div>
+
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 20px; border-left: 4px solid #dc2626;">
+          <div style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Ticket Reference ID</div>
+          <div style="font-size: 20px; font-weight: 800; color: #dc2626; font-family: monospace; margin-top: 2px;">${ticketId}</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; font-size: 13px; color: #334155;">
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px;">
+            <span style="color: #64748b; font-weight: 600;">Date Submitted</span>
+            <span style="font-weight: 700; color: #0f172a;">${dateStr} at ${timeStr}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px;">
+            <span style="color: #64748b; font-weight: 600;">Grievance Category</span>
+            <span style="font-weight: 700; color: #dc2626; text-transform: uppercase;">🚨 ${category} (EMERGENCY)</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px;">
+            <span style="color: #64748b; font-weight: 600;">Submission Format</span>
+            <span style="font-weight: 700; color: #047857;">🎙️ Emergency Voice Note</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;">
+            <span style="color: #64748b; font-weight: 600;">Transcribed Grievance Text</span>
+            <div style="background: #f1f5f9; padding: 12px; border-radius: 8px; font-size: 12px; color: #1e293b; line-height: 1.5; font-style: italic; max-height: 100px; overflow-y: auto;">
+              "${text}"
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 20px;">
+          <button onclick="window.print()" style="flex: 1; padding: 12px; background: #0f172a; color: #fff; border: none; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            🖨️ Print Receipt
+          </button>
+          <button onclick="document.getElementById('receipt-modal-overlay').style.display='none'" style="flex: 1; padding: 12px; background: #e2e8f0; color: #475569; border: none; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer;">
+            Close Window
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  modal.style.display = 'flex';
+}
 
 function toggleHeaderVoiceSearch() {
   const voiceBtn = document.querySelector('.voice-btn');
@@ -604,32 +778,24 @@ function toggleHeaderVoiceSearch() {
     return;
   }
   
+  headerVoiceTranscript = '';
   headerVoiceRecognition = new SpeechRecognition();
   headerVoiceRecognition.lang = localStorage.getItem('prajamitra_lang') || 'en';
-  headerVoiceRecognition.continuous = false;
+  headerVoiceRecognition.continuous = true;
   headerVoiceRecognition.interimResults = false;
   
   const oldText = voiceBtn.innerHTML;
-  voiceBtn.innerHTML = '🎙️ Listening...';
+  voiceBtn.innerHTML = '⏹️ Stop & Submit Emergency';
   voiceBtn.style.backgroundColor = '#dc2626';
   voiceBtn.style.color = '#fff';
   isHeaderVoiceRecording = true;
   
   headerVoiceRecognition.onresult = function(event) {
-    const text = event.results[0][0].transcript;
-    voiceBtn.innerHTML = oldText;
-    voiceBtn.style.backgroundColor = '';
-    voiceBtn.style.color = '';
-    isHeaderVoiceRecording = false;
-    
-    if (typeof speakText === 'function') {
-      speakText('Searching for ' + text);
+    for (let i = event.resultIndex; i < event.results.length; ++i) {
+      if (event.results[i].isFinal) {
+        headerVoiceTranscript += event.results[i][0].transcript + ' ';
+      }
     }
-    
-    const searchInput = document.querySelector('header.header .search input');
-    if (searchInput) searchInput.value = text;
-    
-    triggerAISearch(text);
   };
   
   headerVoiceRecognition.onerror = function() {
@@ -644,6 +810,51 @@ function toggleHeaderVoiceSearch() {
     voiceBtn.style.backgroundColor = '';
     voiceBtn.style.color = '';
     isHeaderVoiceRecording = false;
+    
+    const text = headerVoiceTranscript.trim();
+    if (!text) {
+      alert('No voice input was detected. Please try again.');
+      return;
+    }
+    
+    let category = 'other';
+    const q = text.toLowerCase();
+    const matches = (keywords) => keywords.some(k => q.includes(k));
+    
+    if (matches(['hospital', 'doctor', 'medicine', 'health', 'ambulance', 'clinic'])) {
+      category = 'health';
+    } else if (matches(['school', 'education', 'college', 'scholarship', 'teacher', 'fee', 'hostel'])) {
+      category = 'education';
+    } else if (matches(['road', 'pothole', 'street', 'drainage', 'garbage', 'streetlight', 'highway', 'civic', 'sewage'])) {
+      category = 'civic';
+    } else if (matches(['rice', 'wheat', 'grain', 'ration', 'food', 'canteen', 'water', 'meal', 'welfare'])) {
+      category = 'food';
+    }
+    
+    const formData = new FormData();
+    formData.append('category', category);
+    formData.append('title', '🚨 Emergency Voice Complaint');
+    formData.append('description', text);
+    formData.append('severity', 'High');
+    formData.append('anonymous', 'true');
+    
+    fetch((window.API_BASE || '') + '/api/complaints', {
+      method: 'POST',
+      body: formData
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('API Lodging failed');
+      return res.json();
+    })
+    .then(data => {
+      showGrievanceReceiptModal(data.id, category, text);
+      if (typeof loadDashboardStats === 'function') loadDashboardStats();
+      if (typeof loadMyComplaints === 'function') loadMyComplaints();
+    })
+    .catch(err => {
+      console.error(err);
+      alert('Failed to register voice complaint.');
+    });
   };
   
   headerVoiceRecognition.start();
@@ -816,5 +1027,279 @@ function openSystemModal(tab) {
 function closeSystemModal() {
   const modal = document.getElementById('system-panel-overlay');
   if (modal) modal.classList.remove('active');
+}
+
+// Google OAuth Simulator Methods
+function openGoogleAuthPopup() {
+  closeAuthModal();
+
+  let popup = document.getElementById('google-oauth-popup');
+  if (!popup) {
+    popup = document.createElement('div');
+    popup.id = 'google-oauth-popup';
+    popup.className = 'modal-overlay';
+    document.body.appendChild(popup);
+  }
+
+  popup.innerHTML = `
+    <div class="modal-card" style="max-width:460px; padding:28px; background:#fff; border-radius:16px; box-shadow:0 8px 30px rgba(0,0,0,0.12); text-align:center;">
+      <div style="display:flex; justify-content:center; margin-bottom:16px;">
+        <svg style="width:40px; height:40px;" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+      </div>
+
+      <h3 style="font-size:20px; font-weight:600; color:#202124; margin:0 0 6px 0; font-family:'Google Sans', Roboto, sans-serif;">Sign in with Google</h3>
+      <p style="font-size:14px; color:#5f6368; margin:0 0 24px 0;">to continue to <b>PrajaMitra</b></p>
+
+      <div style="display:flex; flex-direction:column; gap:10px; text-align:left; max-height:240px; overflow-y:auto; margin-bottom:20px; padding:2px;">
+        <div style="font-size:11px; font-weight:700; color:#70757a; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.5px;">Authority Accounts</div>
+        
+        <div class="google-account-row" onclick="selectGoogleAccount('harishmadakam101@gmail.com')">
+          <div class="avatar" style="background:#dc2626;">H</div>
+          <div style="flex:1;">
+            <div style="font-weight:600; font-size:13px; color:#3c4043;">Health Minister</div>
+            <div style="font-size:12px; color:#5f6368;">harishmadakam101@gmail.com</div>
+          </div>
+          <span style="font-size:11px; color:#1f7a3f; background:#f0fdf4; padding:2px 6px; border-radius:4px; font-weight:700;">Health</span>
+        </div>
+
+        <div class="google-account-row" onclick="selectGoogleAccount('vishnuvardhanpaturi70@gmail.com')">
+          <div class="avatar" style="background:#2563eb;">F</div>
+          <div style="flex:1;">
+            <div style="font-weight:600; font-size:13px; color:#3c4043;">Food Minister</div>
+            <div style="font-size:12px; color:#5f6368;">vishnuvardhanpaturi70@gmail.com</div>
+          </div>
+          <span style="font-size:11px; color:#1f7a3f; background:#f0fdf4; padding:2px 6px; border-radius:4px; font-weight:700;">Food</span>
+        </div>
+
+        <div class="google-account-row" onclick="selectGoogleAccount('kummarisanthosh886@gmail.com')">
+          <div class="avatar" style="background:#d97706;">E</div>
+          <div style="flex:1;">
+            <div style="font-weight:600; font-size:13px; color:#3c4043;">Education Minister</div>
+            <div style="font-size:12px; color:#5f6368;">kummarisanthosh886@gmail.com</div>
+          </div>
+          <span style="font-size:11px; color:#1f7a3f; background:#f0fdf4; padding:2px 6px; border-radius:4px; font-weight:700;">Education</span>
+        </div>
+
+        <div class="google-account-row" onclick="selectGoogleAccount('kumarprabha275@gmail.com')">
+          <div class="avatar" style="background:#7c3aed;">C</div>
+          <div style="flex:1;">
+            <div style="font-weight:600; font-size:13px; color:#3c4043;">Civic Infrastructure Minister</div>
+            <div style="font-size:12px; color:#5f6368;">kumarprabha275@gmail.com</div>
+          </div>
+          <span style="font-size:11px; color:#1f7a3f; background:#f0fdf4; padding:2px 6px; border-radius:4px; font-weight:700;">Civic</span>
+        </div>
+
+        <div style="border-top:1px solid #e8eaed; margin:10px 0;"></div>
+        <div style="font-size:11px; font-weight:700; color:#70757a; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.5px;">Standard Account</div>
+
+        <div class="google-account-row" id="use-custom-google-trigger" onclick="toggleCustomGoogleInput()">
+          <div class="avatar" style="background:#5f6368; color:#fff;">👤</div>
+          <div style="flex:1;">
+            <div style="font-weight:600; font-size:13px; color:#3c4043;">Use another Gmail account</div>
+            <div style="font-size:12px; color:#5f6368;">Log in as a citizen with any Gmail address</div>
+          </div>
+        </div>
+
+        <div id="custom-google-input-box" style="display:none; flex-direction:column; gap:8px; padding:10px 0;">
+          <input type="email" id="custom-google-email" class="form-control" placeholder="yourname@gmail.com" style="padding:10px;">
+          <button type="button" class="btn btn-primary" onclick="submitCustomGoogleAccount()" style="justify-content:center; padding:10px;">Continue</button>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#5f6368; margin-top:24px; border-top:1px solid #f1f3f4; padding-top:14px;">
+        <span style="text-align:left; line-height:1.3; max-width:280px;">Google will share your name, email address and profile picture with PrajaMitra.</span>
+        <button type="button" onclick="closeGoogleAuthPopup()" style="border:none; background:none; font-weight:600; color:#1a73e8; cursor:pointer; font-size:13px;">Cancel</button>
+      </div>
+    </div>
+  `;
+
+  popup.classList.add('active');
+}
+
+function closeGoogleAuthPopup() {
+  const popup = document.getElementById('google-oauth-popup');
+  if (popup) popup.classList.remove('active');
+}
+
+function toggleCustomGoogleInput() {
+  const box = document.getElementById('custom-google-input-box');
+  const trigger = document.getElementById('use-custom-google-trigger');
+  if (box.style.display === 'none') {
+    box.style.display = 'flex';
+    trigger.style.display = 'none';
+    document.getElementById('custom-google-email').focus();
+  } else {
+    box.style.display = 'none';
+    trigger.style.display = 'flex';
+  }
+}
+
+function submitCustomGoogleAccount() {
+  const emailVal = document.getElementById('custom-google-email').value.trim();
+  if (!emailVal) {
+    alert('Please enter a valid Gmail address!');
+    return;
+  }
+  if (!emailVal.includes('@')) {
+    alert('Must be a valid email address!');
+    return;
+  }
+  selectGoogleAccount(emailVal);
+}
+
+function selectGoogleAccount(email) {
+  fetch(window.API_BASE + '/api/auth/google', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('Auth failed');
+    return res.json();
+  })
+  .then(data => {
+    localStorage.setItem('prajamitra_token', data.token);
+    localStorage.setItem('prajamitra_user_email', data.email);
+    localStorage.setItem('prajamitra_user_phone', '');
+    
+    closeGoogleAuthPopup();
+    alert('Sign in successful! Active Account: ' + data.email);
+    
+    const authorities = [
+      "vishnuvardhanpaturi70@gmail.com",
+      "kummarisanthosh886@gmail.com",
+      "kumarprabha275@gmail.com",
+      "harishmadakam101@gmail.com"
+    ];
+    if (authorities.includes(data.email.toLowerCase())) {
+      localStorage.setItem('prajamitra_is_authority', 'true');
+      location.href = 'track.html?view=authority';
+    } else {
+      localStorage.removeItem('prajamitra_is_authority');
+      location.href = 'main.html';
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert('Failed to connect to authentication server.');
+  });
+}
+
+// Injected styling for Google accounts popup row
+const googleOAuthStyles = document.createElement('style');
+googleOAuthStyles.innerHTML = `
+  .google-account-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #dadce0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .google-account-row:hover {
+    background: #f7f9fa;
+    border-color: #cbd5e1;
+  }
+  .google-account-row .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: #fff;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+`;
+document.head.appendChild(googleOAuthStyles);
+
+function openAuthorityModal() {
+  let modal = document.getElementById('authority-login-overlay');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'authority-login-overlay';
+    modal.className = 'modal-overlay';
+    document.body.appendChild(modal);
+  }
+
+  modal.innerHTML = `
+    <div class="modal-card" style="max-width: 420px; padding: 30px; text-align: left;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; border-bottom:1px solid #cbd5e1; padding-bottom:10px;">
+        <h3 style="margin:0; font-size:18px; font-weight:800; color:#0f172a;">🏛️ Authority Admin Login</h3>
+        <button type="button" onclick="closeAuthorityModal()" style="border:none; background:none; font-size:24px; cursor:pointer; color:#64748b; line-height:1;">×</button>
+      </div>
+      
+      <form onsubmit="submitAuthorityLogin(event)">
+        <div class="form-group" style="margin-bottom:14px;">
+          <label style="font-weight:700; font-size:12px; color:#475569; margin-bottom:6px; display:block;">Email Address <span style="color:#ef4444;">*</span></label>
+          <input type="email" id="auth-email-input" class="form-control" placeholder="minister@example.com" required style="padding:10px;">
+        </div>
+        
+        <div class="form-group" style="margin-bottom:14px;">
+          <label style="font-weight:700; font-size:12px; color:#475569; margin-bottom:6px; display:block;">Select Department <span style="color:#ef4444;">*</span></label>
+          <select id="auth-dept-select" class="form-control" required style="padding:10px; background:#fff; height:auto; border:1px solid #cbd5e1; border-radius:6px; outline:none; width:100%;">
+            <option value="food">Food Department</option>
+            <option value="civic">Civic Infrastructure</option>
+            <option value="education">Education</option>
+            <option value="health">Health Department</option>
+            <option value="others">Others</option>
+          </select>
+        </div>
+        
+        <div class="form-group" style="margin-bottom:14px;">
+          <label style="font-weight:700; font-size:12px; color:#475569; margin-bottom:6px; display:block;">Department Passcode <span style="color:#ef4444;">*</span></label>
+          <input type="password" id="auth-passcode-input" class="form-control" placeholder="Enter secret passcode" required style="padding:10px;">
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; margin-top: 15px; background:#1f7a3f; border-color:#1f7a3f;">Verify & Login</button>
+      </form>
+    </div>
+  `;
+
+  modal.classList.add('active');
+}
+
+function closeAuthorityModal() {
+  const modal = document.getElementById('authority-login-overlay');
+  if (modal) modal.classList.remove('active');
+}
+
+function submitAuthorityLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('auth-email-input').value.trim();
+  const department = document.getElementById('auth-dept-select').value;
+  const passcode = document.getElementById('auth-passcode-input').value.trim();
+
+  fetch((window.API_BASE || '') + '/api/auth/authority', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, department, passcode })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('Incorrect credentials mismatch');
+    return res.json();
+  })
+  .then(data => {
+    localStorage.setItem('prajamitra_token', data.token);
+    localStorage.setItem('prajamitra_user_email', data.email);
+    localStorage.setItem('prajamitra_user_phone', '');
+    localStorage.setItem('prajamitra_is_authority', 'true');
+    
+    closeAuthorityModal();
+    alert('Logged in successfully as Authority Admin!');
+    location.href = 'track.html?view=authority';
+  })
+  .catch(err => {
+    console.error(err);
+    alert('Invalid Email, Department, or Passcode mapping!');
+  });
 }
 
