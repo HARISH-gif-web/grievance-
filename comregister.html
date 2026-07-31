@@ -239,9 +239,14 @@
           
           <div class="ticket-info-box" id="print-receipt-section" style="max-width:540px; margin:0 auto 24px; text-align:left; border:1px solid #cbd5e1; border-radius:12px; padding:24px;">
             <h3 style="border-bottom:1px solid #e2e8f0; padding-bottom:12px; margin-bottom:12px; color:#1f7a3f;">PRASAMITRA GRIEVANCE RECEIPT</h3>
-            <div class="ticket-field">
+            <div class="ticket-field" style="display: flex; justify-content: space-between; align-items: center;">
               <span>Complaint Ticket ID</span>
-              <span class="ticket-val-id" id="receipt-ticket-id">PM-2026-X2938</span>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="ticket-val-id" id="receipt-ticket-id">PM-2026-X2938</span>
+                <button type="button" class="btn btn-secondary" onclick="copyTicketID()" style="padding: 4px 8px; font-size: 11px; margin: 0; line-height: 1; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid #1f7a3f; color: #1f7a3f; background: #f0fdf4;">
+                  📋 Copy
+                </button>
+              </div>
             </div>
             <div class="ticket-field">
               <span>Submission Date &amp; Time</span>
@@ -495,40 +500,87 @@
           return;
         }
         
-        let titleText = "";
-        let descText = "";
-        
+        let customSubText = "";
         if (subcategory === 'Others') {
-          const customSubText = document.getElementById('custom-subcategory-text').value.trim();
+          customSubText = document.getElementById('custom-subcategory-text').value.trim();
           if (!customSubText) {
             alert("Please type a brief detail in the Specify the Problem box so the AI can build a description!");
             return;
           }
-          titleText = `${customSubText} Grievance`;
-          descText = `This complaint is raised to report: ${customSubText}. Requesting immediate inspection, action, and resolution by the concerned department.`;
-        } else {
-          const data = mockAIPredictions[category] && mockAIPredictions[category][subcategory];
-          if (data) {
-            titleText = data.title;
-            descText = data.desc;
-          } else {
-            titleText = `${subcategory} Grievance`;
-            descText = `I am facing an issue regarding ${subcategory}. Please look into this matter and resolve it at the earliest.`;
-          }
         }
         
-        document.getElementById('grievance-title').value = titleText;
-        document.getElementById('grievance-desc').value = descText;
-        document.getElementById('char-counter').innerText = `${descText.length} / 2000 chars`;
+        // Show loading state on button
+        const aiBtn = document.querySelector('.ai-gen-btn');
+        const oldBtnText = aiBtn.innerHTML;
+        aiBtn.innerHTML = '✨ Generating...';
+        aiBtn.disabled = true;
         
-        const tField = document.getElementById('grievance-title');
-        const dField = document.getElementById('grievance-desc');
-        tField.style.borderColor = '#1f7a3f';
-        dField.style.borderColor = '#1f7a3f';
-        setTimeout(() => {
-          tField.style.borderColor = '';
-          dField.style.borderColor = '';
-        }, 1000);
+        fetch((window.API_BASE || '') + '/api/ai/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ category, subcategory, customSubText })
+        })
+        .then(res => {
+          if (!res.ok) throw new Error('Backend generation failure');
+          return res.json();
+        })
+        .then(data => {
+          if (data.title && data.description) {
+            document.getElementById('grievance-title').value = data.title;
+            document.getElementById('grievance-desc').value = data.description;
+            document.getElementById('char-counter').innerText = `${data.description.length} / 2000 chars`;
+            
+            // Visual success indicator
+            const tField = document.getElementById('grievance-title');
+            const dField = document.getElementById('grievance-desc');
+            tField.style.borderColor = '#1f7a3f';
+            dField.style.borderColor = '#1f7a3f';
+            setTimeout(() => {
+              tField.style.borderColor = '';
+              dField.style.borderColor = '';
+            }, 1000);
+          } else {
+            throw new Error('Invalid JSON format received');
+          }
+        })
+        .catch(err => {
+          console.warn('AI API call failed, falling back to local database predictions:', err);
+          // Fallback local predictions logic
+          let titleText = "";
+          let descText = "";
+          
+          if (subcategory === 'Others') {
+            titleText = `${customSubText} Grievance`;
+            descText = `This complaint is raised to report: ${customSubText}. Requesting immediate inspection, action, and resolution by the concerned department.`;
+          } else {
+            const data = mockAIPredictions[category] && mockAIPredictions[category][subcategory];
+            if (data) {
+              titleText = data.title;
+              descText = data.desc;
+            } else {
+              titleText = `${subcategory} Grievance`;
+              descText = `I am facing an issue regarding ${subcategory}. Please look into this matter and resolve it at the earliest.`;
+            }
+          }
+          
+          document.getElementById('grievance-title').value = titleText;
+          document.getElementById('grievance-desc').value = descText;
+          document.getElementById('char-counter').innerText = `${descText.length} / 2000 chars`;
+          
+          // Flash orange border for fallback notification
+          const tField = document.getElementById('grievance-title');
+          const dField = document.getElementById('grievance-desc');
+          tField.style.borderColor = '#f59e0b';
+          dField.style.borderColor = '#f59e0b';
+          setTimeout(() => {
+            tField.style.borderColor = '';
+            dField.style.borderColor = '';
+          }, 1000);
+        })
+        .finally(() => {
+          aiBtn.innerHTML = oldBtnText;
+          aiBtn.disabled = false;
+        });
       }
 
       function selectSeverity(level, btn) {
@@ -992,6 +1044,28 @@
 
       function printReceipt() {
         window.print();
+      }
+
+      function copyTicketID() {
+        const idVal = document.getElementById('receipt-ticket-id').innerText;
+        navigator.clipboard.writeText(idVal)
+          .then(() => {
+            const btn = document.querySelector('[onclick="copyTicketID()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✓ Copied';
+            btn.style.background = '#1f7a3f';
+            btn.style.color = '#fff';
+            setTimeout(() => {
+              btn.innerHTML = originalText;
+              btn.style.background = '#f0fdf4';
+              btn.style.color = '#1f7a3f';
+            }, 2000);
+          })
+          .catch(err => {
+            console.error('Failed to copy text: ', err);
+            // Fallback alert
+            alert('Ticket ID copied: ' + idVal);
+          });
       }
     </script>
   </body>

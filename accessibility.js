@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   injectAccessibilityLayouts();
   checkAuthStatus();
   initAccessibilityFeatures();
+  initGlobalSearchHooks();
 });
 
 // 1. Inject Dynamic HTML Layouts (Skip Link, Accessibility Settings Panel, Auth Modal, Hamburger Drawer)
@@ -154,6 +155,25 @@ function injectAccessibilityLayouts() {
       <a href="complaint.html" class="drawer-link">📝 Lodge Grievance</a>
       <a href="track.html" class="drawer-link">📍 Status Tracker</a>
       <a href="track.html?view=my-complaints" class="drawer-link">📋 My Grievances</a>
+      
+      <div style="margin-top:20px; padding-top:20px; border-top:1px solid #e2e8f0;">
+        <h4 style="margin:0 0 12px; color:#ef4444; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;">🚨 Emergency Helplines</h4>
+        <div style="display:grid; gap:10px; font-size:13px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#fee2e2; border:1px solid #fecaca; border-radius:6px; padding:8px 12px;">
+            <span style="font-weight:700; color:#991b1b;">National Response</span>
+            <a href="tel:112" style="font-weight:800; color:#dc2626; text-decoration:none;">112</a>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#fee2e2; border:1px solid #fecaca; border-radius:6px; padding:8px 12px;">
+            <span style="font-weight:700; color:#991b1b;">Women Helpline</span>
+            <a href="tel:1091" style="font-weight:800; color:#dc2626; text-decoration:none;">1091</a>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#fee2e2; border:1px solid #fecaca; border-radius:6px; padding:8px 12px;">
+            <span style="font-weight:700; color:#991b1b;">Citizen Support</span>
+            <a href="tel:1800111122" style="font-weight:800; color:#dc2626; text-decoration:none;">1800-111-122</a>
+          </div>
+        </div>
+      </div>
+
       <div style="margin-top:40px; padding-top:20px; border-top:1px solid #e2e8f0; font-size:12px; color:#64748b;">
         <p>© 2026 National Informatics Centre.</p>
       </div>
@@ -172,11 +192,8 @@ function injectAccessibilityLayouts() {
     if (oldVoice) {
       oldVoice.outerHTML = `
         <div style="display:flex; gap:8px; align-items:center;">
-          <button class="voice-btn" onclick="startHeaderVoiceSearch()">
+          <button class="voice-btn" onclick="toggleHeaderVoiceSearch()">
             <span class="mic">🎤</span> <span data-translate="voice_search">Voice Search</span>
-          </button>
-          <button class="emergency-header-btn" onclick="triggerVoiceEmergency()">
-            🚨 <span data-translate="voice_emergency">Voice Emergency</span>
           </button>
         </div>
       `;
@@ -379,10 +396,9 @@ function checkAuthStatus() {
           👤 ${userName} <span style="font-size:10px; margin-left:4px;">▼</span>
         </button>
         <div class="profile-dropdown-menu" id="profile-dropdown-menu">
-          <a href="#" class="drop-item">My Profile</a>
           <a href="track.html?view=my-complaints" class="drop-item">My Complaints</a>
-          <a href="#" class="drop-item">Notifications <span class="badge-new" style="margin-left:auto;">2</span></a>
-          <a href="#" class="drop-item">Settings</a>
+          <a href="#" class="drop-item" onclick="openSystemModal('notifications')">Notifications <span class="badge-new" style="margin-left:auto;">2</span></a>
+          <a href="#" class="drop-item" onclick="openSystemModal('settings')">Settings</a>
           <div style="border-top:1px solid #e2e8f0; margin:6px 0;"></div>
           <a href="#" class="drop-item logout" onclick="userLogout()" style="color:#ef4444;">Logout ↩</a>
         </div>
@@ -568,60 +584,237 @@ function submitEmergencyGrievance(audioBlob) {
   });
 }
 
-function startHeaderVoiceSearch() {
+let headerVoiceRecognition = null;
+let isHeaderVoiceRecording = false;
+
+function toggleHeaderVoiceSearch() {
+  const voiceBtn = document.querySelector('.voice-btn');
+  if (!voiceBtn) return;
+  
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
     alert("Speech recognition is not supported in this browser.");
     return;
   }
-  const recognition = new SpeechRecognition();
-  recognition.lang = localStorage.getItem('prajamitra_lang') || 'en';
   
-  const voiceBtn = document.querySelector('.voice-btn');
+  if (isHeaderVoiceRecording) {
+    if (headerVoiceRecognition) {
+      headerVoiceRecognition.stop();
+    }
+    return;
+  }
+  
+  headerVoiceRecognition = new SpeechRecognition();
+  headerVoiceRecognition.lang = localStorage.getItem('prajamitra_lang') || 'en';
+  headerVoiceRecognition.continuous = false;
+  headerVoiceRecognition.interimResults = false;
+  
   const oldText = voiceBtn.innerHTML;
   voiceBtn.innerHTML = '🎙️ Listening...';
+  voiceBtn.style.backgroundColor = '#dc2626';
+  voiceBtn.style.color = '#fff';
+  isHeaderVoiceRecording = true;
   
-  recognition.onresult = function(event) {
+  headerVoiceRecognition.onresult = function(event) {
     const text = event.results[0][0].transcript;
     voiceBtn.innerHTML = oldText;
-    
-    const q = text.toLowerCase();
+    voiceBtn.style.backgroundColor = '';
+    voiceBtn.style.color = '';
+    isHeaderVoiceRecording = false;
     
     if (typeof speakText === 'function') {
-      speakText('Voice command received: redirecting.');
+      speakText('Searching for ' + text);
     }
     
-    if (q.includes('road') || q.includes('pothole') || q.includes('street') || q.includes('garbage') || q.includes('streetlight') || q.includes('highway') || q.includes('drainage')) {
-      location.href = 'comregister.html#civic';
-    } else if (q.includes('ration') || q.includes('food') || q.includes('canteen') || q.includes('water') || q.includes('meal') || q.includes('welfare')) {
-      location.href = 'comregister.html#food';
-    } else if (q.includes('school') || q.includes('education') || q.includes('college') || q.includes('scholarship') || q.includes('teacher') || q.includes('fee')) {
-      location.href = 'comregister.html#education';
-    } else if (q.includes('hospital') || q.includes('doctor') || q.includes('medicine') || q.includes('health') || q.includes('ambulance') || q.includes('clinic')) {
-      location.href = 'comregister.html#health';
-    } else if (q.includes('home')) {
-      location.href = 'main.html';
-    } else if (q.includes('track') || q.includes('status')) {
-      const ticketMatch = q.match(/pm-\d{4}-x\d{5}/i) || q.match(/\d{5}/);
-      if (ticketMatch) {
-        let ticketNum = ticketMatch[0].toUpperCase();
-        if (!ticketNum.startsWith('PM')) {
-          ticketNum = 'PM-2026-X' + ticketNum;
-        }
-        location.href = `track.html?id=${ticketNum}`;
-      } else {
-        location.href = 'track.html';
-      }
-    } else if (q.includes('register') || q.includes('lodge')) {
-      location.href = 'complaint.html';
-    } else {
-      alert(`Voice Command: "${text}" not mapped. Say Roads, Food, Health, Education, Home, or Track.`);
-    }
+    const searchInput = document.querySelector('header.header .search input');
+    if (searchInput) searchInput.value = text;
+    
+    triggerAISearch(text);
   };
   
-  recognition.onerror = function() {
+  headerVoiceRecognition.onerror = function() {
     voiceBtn.innerHTML = oldText;
+    voiceBtn.style.backgroundColor = '';
+    voiceBtn.style.color = '';
+    isHeaderVoiceRecording = false;
   };
-  recognition.start();
+  
+  headerVoiceRecognition.onend = function() {
+    voiceBtn.innerHTML = oldText;
+    voiceBtn.style.backgroundColor = '';
+    voiceBtn.style.color = '';
+    isHeaderVoiceRecording = false;
+  };
+  
+  headerVoiceRecognition.start();
+}
+
+function triggerAISearch(query) {
+  if (!query || !query.trim()) return;
+  
+  const searchBtn = document.querySelector('header.header .search button');
+  const searchInput = document.querySelector('header.header .search input');
+  let oldText = 'Search';
+  if (searchBtn) {
+    oldText = searchBtn.innerText;
+    searchBtn.innerText = '⌛...';
+    searchBtn.style.backgroundColor = '#d97706';
+  }
+  
+  fetch((window.API_BASE || '') + '/api/ai/classify-search', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: query })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('API failed');
+    return res.json();
+  })
+  .then(data => {
+    if (searchBtn) {
+      searchBtn.innerText = '✓ Success';
+      searchBtn.style.backgroundColor = '#16a34a';
+    }
+    setTimeout(() => {
+      if (searchBtn) {
+        searchBtn.innerText = oldText;
+        searchBtn.style.backgroundColor = '';
+      }
+      if (data.category) {
+        location.href = 'comregister.html#' + data.category;
+      } else {
+        location.href = 'comregister.html#other';
+      }
+    }, 600);
+  })
+  .catch(err => {
+    console.warn('AI search classification failed, using keyword fallback:', err);
+    if (searchBtn) {
+      searchBtn.innerText = '✓ Success';
+      searchBtn.style.backgroundColor = '#16a34a';
+    }
+    setTimeout(() => {
+      if (searchBtn) {
+        searchBtn.innerText = oldText;
+        searchBtn.style.backgroundColor = '';
+      }
+      const q = query.toLowerCase();
+      if (q.includes('road') || q.includes('pothole') || q.includes('street') || q.includes('garbage') || q.includes('streetlight') || q.includes('highway') || q.includes('drainage')) {
+        location.href = 'comregister.html#civic';
+      } else if (q.includes('ration') || q.includes('food') || q.includes('canteen') || q.includes('water') || q.includes('meal') || q.includes('welfare') || q.includes('rice') || q.includes('wheat') || q.includes('grains')) {
+        location.href = 'comregister.html#food';
+      } else if (q.includes('school') || q.includes('education') || q.includes('college') || q.includes('scholarship') || q.includes('teacher') || q.includes('fee')) {
+        location.href = 'comregister.html#education';
+      } else if (q.includes('hospital') || q.includes('doctor') || q.includes('medicine') || q.includes('health') || q.includes('ambulance') || q.includes('clinic')) {
+        location.href = 'comregister.html#health';
+      } else {
+        location.href = 'comregister.html#other';
+      }
+    }, 600);
+  });
+}
+
+window.triggerSearch = triggerAISearch;
+
+function initGlobalSearchHooks() {
+  const searchInput = document.querySelector('header.header .search input');
+  const searchBtn = document.querySelector('header.header .search button');
+  if (searchInput && searchBtn) {
+    searchInput.id = 'search-input';
+    const newInput = searchInput.cloneNode(true);
+    const newBtn = searchBtn.cloneNode(true);
+    
+    searchInput.parentNode.replaceChild(newInput, searchInput);
+    searchBtn.parentNode.replaceChild(newBtn, searchBtn);
+    
+    newInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        triggerAISearch(newInput.value);
+      }
+    });
+    newBtn.type = 'button';
+    newBtn.addEventListener('click', () => {
+      triggerAISearch(newInput.value);
+    });
+  }
+}
+
+// Open System Modals for Notifications and Settings
+function openSystemModal(tab) {
+  let modal = document.getElementById('system-panel-overlay');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'system-panel-overlay';
+    modal.className = 'modal-overlay';
+    document.body.appendChild(modal);
+  }
+
+  let title = tab === 'notifications' ? '🔔 Citizen Notifications' : '⚙️ Portal Settings';
+  let bodyContent = '';
+
+  if (tab === 'notifications') {
+    bodyContent = `
+      <div style="display:flex; flex-direction:column; gap:12px; max-height:280px; overflow-y:auto; margin-bottom:20px;">
+        <div style="padding:12px; background:#f0fdf4; border-left:4px solid #16a34a; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+          <div style="font-weight:700; font-size:13px; color:#14532d; display:flex; justify-content:space-between;">
+            <span>Complaint Resolved</span>
+            <span style="font-size:11px; color:#64748b;">Just Now</span>
+          </div>
+          <p style="margin:4px 0 0; font-size:12px; color:#166534; line-height:1.4;">Your complaint regarding 'Water logging on Sector 4' has been resolved by Municipal Officer.</p>
+        </div>
+        <div style="padding:12px; background:#eff6ff; border-left:4px solid #2563eb; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+          <div style="font-weight:700; font-size:13px; color:#1e3a8a; display:flex; justify-content:space-between;">
+            <span>Officer Assigned</span>
+            <span style="font-size:11px; color:#64748b;">2 hours ago</span>
+          </div>
+          <p style="margin:4px 0 0; font-size:12px; color:#1e40af; line-height:1.4;">Nodal Officer has been successfully assigned to track your grievance PM-2026-X80703.</p>
+        </div>
+      </div>
+      <button class="btn btn-secondary" onclick="closeSystemModal()" style="width:100%; justify-content:center;">Clear & Close</button>
+    `;
+  } else {
+    bodyContent = `
+      <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:20px; font-size:13px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:600; color:#334155;">Sound Alerts on Action</span>
+          <input type="checkbox" checked style="width:18px; height:18px; accent-color:#1f7a3f;">
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:600; color:#334155;">Enable GPS Auto-Tracking</span>
+          <input type="checkbox" checked style="width:18px; height:18px; accent-color:#1f7a3f;">
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:600; color:#334155;">Preferred Language</span>
+          <select style="padding:6px 12px; border-radius:6px; border:1px solid #cbd5e1; outline:none; background:#fff;">
+            <option>English</option>
+            <option>Hindi</option>
+            <option>Telugu</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-secondary" onclick="closeSystemModal()" style="flex:1; justify-content:center;">Cancel</button>
+        <button class="btn btn-primary" onclick="closeSystemModal(); alert('Settings saved successfully!');" style="flex:1; justify-content:center; background:#1f7a3f; border-color:#1f7a3f;">Save Settings</button>
+      </div>
+    `;
+  }
+
+  modal.innerHTML = `
+    <div class="modal-card" style="max-width:440px; padding:26px; text-align:left;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
+        <h3 style="margin:0; font-size:18px; font-weight:800; color:#0f172a;">${title}</h3>
+        <button type="button" onclick="closeSystemModal()" style="border:none; background:none; font-size:24px; cursor:pointer; color:#64748b; line-height:1;">×</button>
+      </div>
+      <div>
+        ${bodyContent}
+      </div>
+    </div>
+  `;
+  modal.classList.add('active');
+}
+
+function closeSystemModal() {
+  const modal = document.getElementById('system-panel-overlay');
+  if (modal) modal.classList.remove('active');
 }
 

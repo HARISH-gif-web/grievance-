@@ -126,7 +126,7 @@
     </section>
 
     <!-- INFORMATION GRID (AUTHENTIC GOVT STYLE) -->
-    <div class="info-section-grid">
+    <div class="info-section-grid" style="grid-template-columns: 1fr;">
 
       <!-- Left Side Primary Content -->
       <div style="display:grid; gap:24px;">
@@ -135,57 +135,21 @@
           <h3>📈 Grievance Dashboard Statistics</h3>
           <div class="stats-counter-grid">
             <div class="stats-card">
-              <div class="stats-num">12,480+</div>
+              <div class="stats-num" id="stats-registered">0</div>
               <div class="stats-label">Registered Grievances</div>
             </div>
             <div class="stats-card s2">
-              <div class="stats-num">1,824</div>
+              <div class="stats-num" id="stats-investigation">0</div>
               <div class="stats-label">Under Investigation</div>
             </div>
             <div class="stats-card s3">
-              <div class="stats-num">10,656</div>
-              <div class="stats-label">Resolved Actions (92%)</div>
+              <div class="stats-num" id="stats-resolved">0</div>
+              <div class="stats-label">Resolved Actions</div>
             </div>
           </div>
           <p style="font-size:12px; color:#64748b; text-align:center;">Updated real-time from National Informatics
             Center database servers.</p>
         </div>
-      </div>
-
-      <!-- Right Side Sidebar content -->
-      <div style="display:grid; gap:24px; height:fit-content;">
-
-        <!-- Home Quick Tracker widget -->
-        <div class="info-card" style="border-left: 4px solid #0052cc;">
-          <h3 style="border:none; margin:0; padding:0;">📍 Quick Track Widget</h3>
-          <p style="font-size:12px; color:#64748b; margin-top:6px; margin-bottom:12px;">Quick check complaint progress
-            status.</p>
-          <div style="display:flex; gap:8px;">
-            <input type="text" id="quick-track-input" class="form-control" placeholder="ID (e.g. PM-2026-X839A)"
-              style="padding:10px;" />
-            <button class="btn btn-primary" onclick="quickTrackTicket()" style="padding:10px 14px;">Track</button>
-          </div>
-        </div>
-
-        <!-- Emergency Helplines -->
-        <div class="info-card" style="border-left: 4px solid #ef4444;">
-          <h3>🚨 Emergency Contacts</h3>
-          <div class="emergency-grid">
-            <div class="emergency-item">
-              <span class="emergency-name">National Emergency response</span>
-              <a href="tel:112" class="emergency-number">112</a>
-            </div>
-            <div class="emergency-item">
-              <span class="emergency-name">Women Helpline</span>
-              <a href="tel:1091" class="emergency-number">1091</a>
-            </div>
-            <div class="emergency-item">
-              <span class="emergency-name">Citizen Support Center</span>
-              <a href="tel:1800111122" class="emergency-number">1800-111-122</a>
-            </div>
-          </div>
-        </div>
-
       </div>
 
     </div>
@@ -328,27 +292,65 @@
       // Show check satisfaction animation inside search
       const btn = document.querySelector('.search button');
       const oldText = btn.innerText;
-      btn.innerText = '✓ Success';
-      btn.style.backgroundColor = '#16a34a';
+      btn.innerText = '⌛...';
 
-      setTimeout(() => {
-        btn.innerText = oldText;
-        btn.style.backgroundColor = '';
-
-        const q = query.toLowerCase();
-        if (q.includes('road') || q.includes('pothole') || q.includes('street') || q.includes('garbage') || q.includes('streetlight') || q.includes('highway') || q.includes('drainage')) {
-          location.href = 'comregister.html#civic';
-        } else if (q.includes('ration') || q.includes('food') || q.includes('canteen') || q.includes('water') || q.includes('meal') || q.includes('welfare')) {
-          location.href = 'comregister.html#food';
-        } else if (q.includes('school') || q.includes('education') || q.includes('college') || q.includes('scholarship') || q.includes('teacher') || q.includes('fee')) {
-          location.href = 'comregister.html#education';
-        } else if (q.includes('hospital') || q.includes('doctor') || q.includes('medicine') || q.includes('health') || q.includes('ambulance') || q.includes('clinic')) {
-          location.href = 'comregister.html#health';
-        } else {
-          location.href = 'comregister.html#other';
-        }
-      }, 600);
+      fetch((window.API_BASE || '') + '/api/ai/classify-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: query })
+      })
+      .then(res => res.json())
+      .then(data => {
+        btn.innerText = '✓ Success';
+        btn.style.backgroundColor = '#16a34a';
+        setTimeout(() => {
+          btn.innerText = oldText;
+          btn.style.backgroundColor = '';
+          if (data.category) {
+            location.href = `comregister.html#${data.category}`;
+          } else {
+            location.href = `comregister.html#other`;
+          }
+        }, 600);
+      })
+      .catch(err => {
+        console.warn('AI search classification failed, using keyword fallback:', err);
+        btn.innerText = '✓ Success';
+        btn.style.backgroundColor = '#16a34a';
+        setTimeout(() => {
+          btn.innerText = oldText;
+          btn.style.backgroundColor = '';
+          const q = query.toLowerCase();
+          if (q.includes('road') || q.includes('pothole') || q.includes('street') || q.includes('garbage') || q.includes('streetlight') || q.includes('highway') || q.includes('drainage')) {
+            location.href = 'comregister.html#civic';
+          } else if (q.includes('ration') || q.includes('food') || q.includes('canteen') || q.includes('water') || q.includes('meal') || q.includes('welfare') || q.includes('rice') || q.includes('wheat') || q.includes('grains')) {
+            location.href = 'comregister.html#food';
+          } else if (q.includes('school') || q.includes('education') || q.includes('college') || q.includes('scholarship') || q.includes('teacher') || q.includes('fee')) {
+            location.href = 'comregister.html#education';
+          } else if (q.includes('hospital') || q.includes('doctor') || q.includes('medicine') || q.includes('health') || q.includes('ambulance') || q.includes('clinic')) {
+            location.href = 'comregister.html#health';
+          } else {
+            location.href = 'comregister.html#other';
+          }
+        }, 600);
+      });
     }
+
+    function loadDashboardStats() {
+      fetch((window.API_BASE || '') + '/api/complaints/stats')
+        .then(res => res.json())
+        .then(data => {
+          const regEl = document.getElementById('stats-registered');
+          const invEl = document.getElementById('stats-investigation');
+          const resEl = document.getElementById('stats-resolved');
+          if (regEl) regEl.innerText = data.total;
+          if (invEl) invEl.innerText = data.investigation;
+          if (resEl) resEl.innerText = data.resolved;
+        })
+        .catch(err => console.error('Error loading dashboard statistics:', err));
+    }
+
+    window.addEventListener('DOMContentLoaded', loadDashboardStats);
 
     // Close suggestions on outside click
     window.addEventListener('click', (e) => {

@@ -2,6 +2,7 @@
 node_modules/
 .agents/
 .gemini/
+.env
 
 # Local databases and runtime state
 database.json
